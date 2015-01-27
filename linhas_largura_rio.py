@@ -23,12 +23,20 @@ class DefinirLargura():
         self.raio_pr = self.raio
         self.compri_linha_largura_x1 = self.raio_pr*0.75
         self.compri_linha_largura_x2 = self.raio_pr*0.85
+        self.dict_partes = {}
 
-    def funcao_multipart(self, linha):
+    def funcao_multipart(self, linha, ponto):
         list_partes = []
         if linha.isMultipart:
             for n in range(linha.partCount):
-                list_partes.append(linha.getPart(n))
+                parte = linha.getPart(n)
+                linha_parte = Polyline(parte,self.spatial_geo_sirgas_2000)
+                list_partes.append(parte)
+                if linha_parte.disjoint(ponto):
+                    self.dict_partes["parte" + str(n)] = {"linha_array":parte, "cruza_ponto":False, "linha_geometria":linha_parte}
+                else:
+                    self.dict_partes["parte" + str(n)] = {"linha_array":parte, "cruza_ponto":True, "linha_geometria":linha_parte}
+        print self.dict_partes
         return list_partes
     def validar_circulo(self,tipo_circulo, dict_descricao):
         teste_validacao = False
@@ -42,8 +50,6 @@ class DefinirLargura():
             if 75 < porc_raio_largura < 85:
                 teste_validacao = True
             else:
-                # if self.primeiro_teste_circ:
-
                 if porc_raio_largura <= 80:
                     self.compri_linha_raio_x2 = self.raio
                 else:
@@ -56,7 +62,6 @@ class DefinirLargura():
 
 
     def ponto_meio(self, list_partes, ponto):
-        self.dict_partes = {}
         self.buffer_poligono_borda
         self.x_b
         self.y_b
@@ -76,7 +81,8 @@ class DefinirLargura():
 
 
     def circulo_de_borda_filtro(self, linha_buffer_inter, ponto):
-        list_partes = self.funcao_multipart(linha_buffer_inter)
+        list_partes = self.funcao_multipart(linha_buffer_inter, ponto)
+
         tipo_circulo = None
         dict_circulo = {}
         if list_partes:
@@ -93,8 +99,6 @@ class DefinirLargura():
             tipo_circulo = "extremidade"
             # if contador_raio == 3:
         return tipo_circulo, dict_circulo
-
-
 
 
     def ponto_buffer(self,ponto):
@@ -163,7 +167,6 @@ class DefinirLargura():
                 self.ponto_5m = ponto.projectAs(self.spatial_proj_lambert).buffer(5).projectAs(self.spatial_geo_sirgas_2000)
                 dict_descricao = self.ponto_buffer(ponto)
                 CopyFeatures_management(dict_descricao["linha_largura"], self.diretorio_saida + "/linha_largura_pt" + str(distancia_pt0) + ".shp")
-
 
                 print dict_descricao
                 break
