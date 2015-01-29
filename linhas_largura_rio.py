@@ -128,12 +128,18 @@ class DefinirLargura():
 
     def linha_de_largura(self, dict_descricao, ponto):
         if dict_descricao["tipo"] == "meio":
+            linha_nao_intersecta_ponto = None
             point_circ = Point()
             point_circ.X = dict_descricao["ptc_x"]
             point_circ.Y = dict_descricao["ptc_y"]
             array = Array([point_circ, ponto.getPart(0)])
             linha_circulo = Polyline(array,self.spatial_geo_sirgas_2000)
-            if linha_circulo.disjoint(self.poligono_ma_geo):
+            for parte_linha in self.dict_partes:
+                if self.dict_partes[parte_linha]["cruza_ponto"] == False:
+                    linha_nao_intersecta_ponto = self.dict_partes[parte_linha]["linha_geometria"]
+
+
+            if linha_circulo.disjoint(linha_nao_intersecta_ponto):
                 array.removeAll()
                 point_circ = Point()
                 point_circ.X = self.ptc_x_inv
