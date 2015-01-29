@@ -38,6 +38,7 @@ class DefinirLargura():
                     self.dict_partes["parte" + str(n)] = {"linha_array":parte, "cruza_ponto":True, "linha_geometria":linha_parte}
         print self.dict_partes
         return list_partes
+
     def validar_circulo(self,tipo_circulo, dict_descricao):
         teste_validacao = False
         if tipo_circulo == "meio":
@@ -59,8 +60,6 @@ class DefinirLargura():
             print teste_validacao
         return teste_validacao
 
-
-
     def ponto_meio(self, list_partes, ponto):
         self.buffer_poligono_borda
         self.x_b
@@ -78,7 +77,6 @@ class DefinirLargura():
                 self.pt2_y = pontos_inte_linha_poligono.getPart(1).Y
                 self.ptc_x, self.ptc_y, self.ptc_x_inv, self.ptc_y_inv = PtCircBorda(self.x_b,self.y_b,self.pt1_x,self.pt1_y,self.pt2_x,self.pt2_y).ponto_circ_borda()
         return self.ptc_x, self.ptc_y
-
 
     def circulo_de_borda_filtro(self, linha_buffer_inter, ponto):
         list_partes = self.funcao_multipart(linha_buffer_inter, ponto)
@@ -99,7 +97,6 @@ class DefinirLargura():
             tipo_circulo = "extremidade"
             # if contador_raio == 3:
         return tipo_circulo, dict_circulo
-
 
     def ponto_buffer(self,ponto):
         self.x_b = ponto.getPart().X
@@ -154,7 +151,6 @@ class DefinirLargura():
 
             return linha_largura, linha_circulo
 
-
     def pontos_aolongo_linha(self):
         self.linha_ma_sirgas = self.poligono_ma_geo.boundary()
         linha_lambert = self.linha_ma_sirgas.projectAs(self.spatial_proj_lambert)
@@ -185,17 +181,19 @@ class DefinirLargura():
                 self.pontos_aolongo_linha()
                 print row[0]
         del cursor
+
     def iniciar_codigo(self):
         if path.exists(self.diretorio_saida):
             rmtree(self.diretorio_saida)
         mkdir(self.diretorio_saida)
-        MakeFeatureLayer_management(self.diretorio_entrada + "/MASSA_DAGUA_BRASIL_NOVO.shp", "MASSA_DAGUA")
+        MakeFeatureLayer_management(self.diretorio_entrada + "/MASSA_DAGUA.shp", "MASSA_DAGUA")
         self.selecionar_poligono("MASSA_DAGUA")
 
 class PtCircBorda(object):
     def __init__(self, x0, y0, pt1_x, pt1_y, pt2_x, pt2_y):
         self.x0 = x0; self.y0 = y0
         self.pt1_x = pt1_x; self.pt1_y = pt1_y; self.pt2_x = pt2_x; self.pt2_y = pt2_y
+
     def pt_medio(self):
         ptm_x = (self.pt1_x + self.pt2_x)/2
         ptm_y = (self.pt1_y + self.pt2_y)/2
@@ -206,6 +204,11 @@ class PtCircBorda(object):
         delta_y = (ponto2_y - ponto1_y)
         distancia = sqrt(delta_x*delta_x + delta_y*delta_y)
         return distancia
+    def eq_reduzida_circ(self, x, y):
+        a = self.x0
+        b = self.xy
+        raio =  sqrt(pow((x-a),2) + pow((y-b),2))
+        return raio
 
     def ponto_circ_borda(self):
         self.x1, self.y1 = self.pt_medio()
@@ -214,7 +217,8 @@ class PtCircBorda(object):
         delt_y1 = self.y1 - self.y0
         h1 = sqrt(delt_x1*delt_x1 + delt_y1*delt_y1)
         ##################
-        raio = self.distancia_dois_pontos(self.x0, self.y0, self.pt1_x, self.pt1_y)
+        self.eq_reduzida_circ(self.pt1_x, self.pt1_y)
+        # raio = self.distancia_dois_pontos(self.x0, self.y0, self.pt1_x, self.pt1_y)
         h2 = raio
         delt_x2 = (delt_x1*h2)/h1
         delt_y2 = (delt_y1*h2)/h1
@@ -225,10 +229,9 @@ class PtCircBorda(object):
 
         return self.ptc_x, self.ptc_y, self.ptc_x_inv, self.ptc_y_inv
 
-
-
 if __name__ == '__main__':
-    DefinirLargura().iniciar_codigo()
+    # DefinirLargura().iniciar_codigo()
+    print PtCircBorda(-9,-8,-9,-13,-4,-8).ponto_circ_borda()
 tempo =  time.clock() - tempo
 
 print tempo
