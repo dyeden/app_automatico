@@ -4,7 +4,7 @@ tempo = time.clock()
 
 from arcpy import Array , SelectLayerByLocation_management, MakeFeatureLayer_management, da, SelectLayerByAttribute_management, CopyFeatures_management, AddField_management, \
         Point, Polyline, Polygon, Describe, Extent, SpatialReference, CreateFeatureclass_management, Exists, Dissolve_management, Delete_management, env, ListFields
-from math import sqrt
+from math import sqrt, acos, degrees, sin,cos, tan, pi, atan
 from os import path, mkdir
 from shutil import rmtree
 from sys import argv
@@ -204,11 +204,70 @@ class PtCircBorda(object):
         delta_y = (ponto2_y - ponto1_y)
         distancia = sqrt(delta_x*delta_x + delta_y*delta_y)
         return distancia
-    def eq_reduzida_circ(self, x, y):
+
+    def eq_circ_achar_x(self,y, raio):
         a = self.x0
-        b = self.xy
+        b = self.y0
+        x = a + sqrt(pow(raio,2) - pow(y - b, 2))
+        return x
+
+    def eq_circ_achar_y(self,x, raio):
+        a = self.x0
+        b = self.y0
+        y = b + sqrt(pow(raio,2) - pow(x - a, 2))
+        return y
+
+    def eq_circ_achar_raio(self, x, y):
+        a = self.x0
+        b = self.y0
         raio =  sqrt(pow((x-a),2) + pow((y-b),2))
         return raio
+
+    def converter_pontos_para_vetores_circ(self, ponto_x, ponto_y):
+        vetor_x = ponto_x - self.x0
+        vetor_y = ponto_y - self.y0
+        return vetor_x, vetor_y
+
+    def converter_vetores_circ_para_pontos(self, vetor_x, vetor_y):
+        ponto_x = vetor_x + self.x0
+        ponto_y = vetor_y + self.y0
+        return ponto_x, ponto_y
+
+    def eq_ang_entre_vetores(self):
+        vetor_pt1_x, vetor_pt1_y = self.converter_pontos_para_vetores_circ(self.pt1_x, self.pt1_y)
+        vetor_pt2_x, vetor_pt2_y = self.converter_pontos_para_vetores_circ(self.pt2_x, self.pt2_y)
+        ## produto escalar ###
+        produto_esc = vetor_pt1_x*vetor_pt2_x + vetor_pt1_y*vetor_pt2_y
+        ## magnitude dos vetores ###
+        magnitude_vetor_pt1 = sqrt(pow(vetor_pt1_x,2) + pow(vetor_pt1_y,2))
+        magnitude_vetor_pt2 = sqrt(pow(vetor_pt2_x,2) + pow(vetor_pt2_y,2))
+        angulo_rad = acos(produto_esc/(magnitude_vetor_pt1*magnitude_vetor_pt2))
+        print angulo_rad, "angulo_rad"
+        print degrees(angulo_rad), "angulo_graus"
+
+    def retorna_ponto_atraves_angulo(self, ang_rad, raio):
+        #TODO implementar a funcao para achar o ponto atraves do angulo
+        vetor_x = cos(ang_rad)*raio
+        vetor_y = sin(ang_rad)*raio
+        ponto_x, ponto_y = self.converter_vetores_circ_para_pontos( vetor_x, vetor_y)
+        return ponto_x, ponto_y
+
+    def retorna_angulo_atraves_ponto(self, ponto_x, ponto_y, raio):
+        vetor_x, vetor_y = self.converter_pontos_para_vetores_circ(ponto_x, ponto_y)
+        angulo = atan(vetor_y/vetor_x)
+        if vetor_x >= 0 and vetor_y >= 0:
+            "QI"
+            if vetor_x == 0:
+                angulo = pi/2
+            pass
+        elif vetor_x < 0 and vetor_y > 0:
+            "QII"
+        elif vetor_x <= 0 and vetor_y < 0:
+            if vetor_x == 0:
+                angulo = (5*pi)/4
+            "QIII"
+        elif vetor_x > 0 and vetor_y < 0:
+            "QIV"
 
     def ponto_circ_borda(self):
         self.x1, self.y1 = self.pt_medio()
@@ -217,8 +276,7 @@ class PtCircBorda(object):
         delt_y1 = self.y1 - self.y0
         h1 = sqrt(delt_x1*delt_x1 + delt_y1*delt_y1)
         ##################
-        self.eq_reduzida_circ(self.pt1_x, self.pt1_y)
-        # raio = self.distancia_dois_pontos(self.x0, self.y0, self.pt1_x, self.pt1_y)
+        raio = self.eq_circ_achar_raio(self.pt1_x, self.pt1_y)
         h2 = raio
         delt_x2 = (delt_x1*h2)/h1
         delt_y2 = (delt_y1*h2)/h1
@@ -226,12 +284,15 @@ class PtCircBorda(object):
         self.ptc_y = self.y0 + delt_y2
         self.ptc_x_inv = self.x0 - delt_x2
         self.ptc_y_inv = self.y0 - delt_y2
+        self.eq_ang_entre_vetores()
+        print raio, "raio"
+        self.retorna_ponto_atraves_angulo((5*pi)/4, raio)
 
         return self.ptc_x, self.ptc_y, self.ptc_x_inv, self.ptc_y_inv
 
 if __name__ == '__main__':
     # DefinirLargura().iniciar_codigo()
-    print PtCircBorda(-9,-8,-9,-13,-4,-8).ponto_circ_borda()
+    print PtCircBorda(-9,-8,-4,-8,-9,-13).ponto_circ_borda()
 tempo =  time.clock() - tempo
 
 print tempo
