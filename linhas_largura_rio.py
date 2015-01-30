@@ -12,6 +12,7 @@ env.outputMFlag = "Disabled"
 env.outputZFlag = "Disabled"
 
 class DefinirLargura():
+
     def __init__(self):
         diretorio = path.dirname(path.dirname(argv[0]))
         self.diretorio_saida = diretorio + "/SAIDA"
@@ -36,7 +37,6 @@ class DefinirLargura():
                     self.dict_partes["parte" + str(n)] = {"linha_array":parte, "cruza_ponto":False, "linha_geometria":linha_parte}
                 else:
                     self.dict_partes["parte" + str(n)] = {"linha_array":parte, "cruza_ponto":True, "linha_geometria":linha_parte}
-        print self.dict_partes
         return list_partes
 
     def validar_circulo(self,tipo_circulo, dict_descricao):
@@ -47,9 +47,12 @@ class DefinirLargura():
             compri_linha_largura = linha_largura.projectAs(self.spatial_proj_lambert).length
             compri_linha_circulo = linha_circulo.projectAs(self.spatial_proj_lambert).length
             porc_raio_largura = (compri_linha_largura/compri_linha_circulo)*100
-            print compri_linha_largura, "compri_linha_largura", compri_linha_circulo, "compri_linha_circulo", porc_raio_largura, "porc_raio_largura"
+            #print compri_linha_largura, "compri_linha_largura", compri_linha_circulo, "compri_linha_circulo", porc_raio_largura, "porc_raio_largura"
             if 75 < porc_raio_largura < 85:
                 teste_validacao = True
+            elif self.primeiro_teste_circ:
+                self.primeiro_teste_circ = False
+                self.raio = compri_linha_largura/0.8
             else:
                 if porc_raio_largura <= 80:
                     self.compri_linha_raio_x2 = self.raio
@@ -57,7 +60,7 @@ class DefinirLargura():
                     self.compri_linha_raio_x1 = self.raio
                 print self.compri_linha_raio_x1, "self.compri_linha_raio_x1", self.compri_linha_raio_x2, "self.compri_linha_raio_x2"
                 self.raio = (self.compri_linha_raio_x1 + self.compri_linha_raio_x2)/2
-            print teste_validacao
+
         return teste_validacao
 
     def ponto_meio(self, list_partes, ponto):
@@ -66,7 +69,6 @@ class DefinirLargura():
         self.y_b
         self.ptc_x = None
         self.ptc_y = None
-        print "ponto_meio"
         for parte in list_partes:
             parte_linha = Polyline(parte, self.spatial_geo_sirgas_2000)
             if parte_linha.disjoint(ponto):
@@ -80,7 +82,6 @@ class DefinirLargura():
 
     def circulo_de_borda_filtro(self, linha_buffer_inter, ponto):
         list_partes = self.funcao_multipart(linha_buffer_inter, ponto)
-
         tipo_circulo = None
         dict_circulo = {}
         if list_partes:
@@ -116,10 +117,12 @@ class DefinirLargura():
                 linha_largura, linha_circulo = self.linha_de_largura(dict_descricao, ponto)
                 dict_descricao["linha_largura"] = linha_largura
                 dict_descricao["linha_circulo"] = linha_circulo
+            if self.distancia_pt_inicial == 2400:
+                print tipo_circulo
             teste_validacao = self.validar_circulo(tipo_circulo, dict_descricao)
-            CopyFeatures_management(linha_largura, self.diretorio_saida + "/linha_largura" + str(loops_validacao) + ".shp")
-            CopyFeatures_management(linha_circulo, self.diretorio_saida + "/linha_circulo" + str(loops_validacao) + ".shp")
-            CopyFeatures_management(self.buffer_poligono_borda, self.diretorio_saida + "/buffer_poligono_borda" + str(loops_validacao) + ".shp")
+            # CopyFeatures_management(linha_largura, self.diretorio_saida + "/linha_largura" + str(loops_validacao) + str(self.distancia_pt0) + ".shp")
+            # CopyFeatures_management(linha_circulo, self.diretorio_saida + "/linha_circulo" + str(loops_validacao) + str(self.distancia_pt0) + ".shp")
+            # CopyFeatures_management(self.buffer_poligono_borda, self.diretorio_saida + "/buffer_poligono_borda" + str(loops_validacao) + str(self.distancia_pt0) + ".shp")
             loops_validacao += 1
         return dict_descricao
 
@@ -134,8 +137,6 @@ class DefinirLargura():
             for parte_linha in self.dict_partes:
                 if self.dict_partes[parte_linha]["cruza_ponto"] == False:
                     linha_nao_intersecta_ponto = self.dict_partes[parte_linha]["linha_geometria"]
-
-
             if linha_circulo.disjoint(linha_nao_intersecta_ponto):
                 array.removeAll()
                 point_circ = Point()
@@ -148,7 +149,6 @@ class DefinirLargura():
             else:
                 linha_largura = linha_circulo.intersect(self.poligono_ma_geo, 2)
                 array.removeAll()
-
             return linha_largura, linha_circulo
 
     def pontos_aolongo_linha(self):
@@ -156,30 +156,32 @@ class DefinirLargura():
         linha_lambert = self.linha_ma_sirgas.projectAs(self.spatial_proj_lambert)
         compri_total = linha_lambert.length
         compri_linha_largura = self.raio*0.8
-        distancia_pt0 = 0
+        self.distancia_pt_inicial = 0
         list_pts = []
-        while distancia_pt0 < compri_total:
+        while self.distancia_pt_inicial < compri_total:
+            print "self.distancia_pt_inicial", self.distancia_pt_inicial
             bool_extremid_poligono = False
+            self.primeiro_teste_circ = True
             compri_ok = False
             self.compri_linha_raio_x1 = compri_linha_largura/1.1
             self.compri_linha_raio_x2 = compri_linha_largura/0.5
             while compri_ok == False:
-                self.distancia_pt0 = distancia_pt0
-                ponto = linha_lambert.positionAlongLine(distancia_pt0).projectAs(self.spatial_geo_sirgas_2000)
+                ponto = linha_lambert.positionAlongLine(self.distancia_pt_inicial).projectAs(self.spatial_geo_sirgas_2000)
                 self.ponto_5m = ponto.projectAs(self.spatial_proj_lambert).buffer(5).projectAs(self.spatial_geo_sirgas_2000)
                 dict_descricao = self.ponto_buffer(ponto)
-                CopyFeatures_management(dict_descricao["linha_largura"], self.diretorio_saida + "/linha_largura_pt" + str(distancia_pt0) + ".shp")
-
+                compri_ok = True
                 print dict_descricao
-                break
-            break
+
+            CopyFeatures_management(dict_descricao["linha_largura"], self.diretorio_saida + "/linha_largura" + str(self.distancia_pt_inicial) + ".shp")
+            CopyFeatures_management(dict_descricao["linha_circulo"], self.diretorio_saida + "/linha_circulo" + str(self.distancia_pt_inicial) + ".shp")
+            CopyFeatures_management(self.buffer_poligono_borda, self.diretorio_saida + "/buffer_poligono_borda" + str(self.distancia_pt_inicial) + ".shp")
+            self.distancia_pt_inicial += 30
 
     def selecionar_poligono(self, layer_massa_dagua):
         with da.SearchCursor(layer_massa_dagua,["OID@","SHAPE@"],"FID = 35") as cursor:
             for row in cursor:
                 self.poligono_ma_geo = row[1].projectAs(SpatialReference(4674))
                 self.pontos_aolongo_linha()
-                print row[0]
         del cursor
 
     def iniciar_codigo(self):
@@ -233,20 +235,18 @@ class PtCircBorda(object):
         ponto_y = vetor_y + self.y0
         return ponto_x, ponto_y
 
-    def eq_ang_entre_vetores(self):
-        vetor_pt1_x, vetor_pt1_y = self.converter_pontos_para_vetores_circ(self.pt1_x, self.pt1_y)
-        vetor_pt2_x, vetor_pt2_y = self.converter_pontos_para_vetores_circ(self.pt2_x, self.pt2_y)
+    def eq_ang_entre_vetores(self, ponto1_x, ponto1_y, ponto2_x, ponto2_y):
+        vetor_pt1_x, vetor_pt1_y = self.converter_pontos_para_vetores_circ(ponto1_x, ponto1_y)
+        vetor_pt2_x, vetor_pt2_y = self.converter_pontos_para_vetores_circ(ponto2_x, ponto2_y)
         ## produto escalar ###
         produto_esc = vetor_pt1_x*vetor_pt2_x + vetor_pt1_y*vetor_pt2_y
         ## magnitude dos vetores ###
         magnitude_vetor_pt1 = sqrt(pow(vetor_pt1_x,2) + pow(vetor_pt1_y,2))
         magnitude_vetor_pt2 = sqrt(pow(vetor_pt2_x,2) + pow(vetor_pt2_y,2))
         angulo_rad = acos(produto_esc/(magnitude_vetor_pt1*magnitude_vetor_pt2))
-        print angulo_rad, "angulo_rad"
-        print degrees(angulo_rad), "angulo_graus"
+        return angulo_rad
 
     def retorna_ponto_atraves_angulo(self, ang_rad, raio):
-        #TODO implementar a funcao para achar o ponto atraves do angulo
         vetor_x = cos(ang_rad)*raio
         vetor_y = sin(ang_rad)*raio
         ponto_x, ponto_y = self.converter_vetores_circ_para_pontos( vetor_x, vetor_y)
@@ -254,45 +254,55 @@ class PtCircBorda(object):
 
     def retorna_angulo_atraves_ponto(self, ponto_x, ponto_y, raio):
         vetor_x, vetor_y = self.converter_pontos_para_vetores_circ(ponto_x, ponto_y)
-        angulo = atan(vetor_y/vetor_x)
+        if vetor_x == 0:
+            angulo = pi/2
+        else:
+            angulo = abs(atan(vetor_y/vetor_x))
         if vetor_x >= 0 and vetor_y >= 0:
             "QI"
-            if vetor_x == 0:
-                angulo = pi/2
             pass
         elif vetor_x < 0 and vetor_y > 0:
             "QII"
+            angulo = pi - angulo
         elif vetor_x <= 0 and vetor_y < 0:
-            if vetor_x == 0:
-                angulo = (5*pi)/4
             "QIII"
+            angulo = pi + angulo
         elif vetor_x > 0 and vetor_y < 0:
             "QIV"
+            angulo = 2*pi - angulo
+        return angulo
+
+    def retorna_pontos_metade_entre_vetores(self, ponto1_x, ponto1_y, ponto2_x, ponto2_y, raio):
+        angulo_pt1 = self.retorna_angulo_atraves_ponto(ponto1_x, ponto1_y, raio)
+        angulo_pt2 = self.retorna_angulo_atraves_ponto(ponto2_x, ponto2_y, raio)
+        menor_ang_vetores = self.eq_ang_entre_vetores(ponto1_x, ponto1_y, ponto2_x, ponto2_y)
+        if angulo_pt1 <= angulo_pt2:
+            if (angulo_pt2 - angulo_pt1) > pi:
+                angulo_metade = angulo_pt2 + menor_ang_vetores/2
+            else:
+                angulo_metade = angulo_pt1 + menor_ang_vetores/2
+        else:
+            if (angulo_pt1 - angulo_pt2) > pi:
+                angulo_metade = angulo_pt1 + menor_ang_vetores/2
+            else:
+                angulo_metade = angulo_pt2 + menor_ang_vetores/2
+
+        if angulo_metade < pi:
+            angulo_metade_inv = pi + angulo_metade
+        else:
+            angulo_metade_inv = angulo_metade - pi
+
+        pt_x_metade, pt_y_metade = self.retorna_ponto_atraves_angulo(angulo_metade, raio)
+        pt_x_metade_inv, pt_y_metade_inv = self.retorna_ponto_atraves_angulo(angulo_metade_inv, raio)
+        return pt_x_metade, pt_y_metade, pt_x_metade_inv, pt_y_metade_inv
 
     def ponto_circ_borda(self):
-        self.x1, self.y1 = self.pt_medio()
-        #distancia entre ponto medio
-        delt_x1 = self.x1 - self.x0
-        delt_y1 = self.y1 - self.y0
-        h1 = sqrt(delt_x1*delt_x1 + delt_y1*delt_y1)
-        ##################
         raio = self.eq_circ_achar_raio(self.pt1_x, self.pt1_y)
-        h2 = raio
-        delt_x2 = (delt_x1*h2)/h1
-        delt_y2 = (delt_y1*h2)/h1
-        self.ptc_x = self.x0 + delt_x2
-        self.ptc_y = self.y0 + delt_y2
-        self.ptc_x_inv = self.x0 - delt_x2
-        self.ptc_y_inv = self.y0 - delt_y2
-        self.eq_ang_entre_vetores()
-        print raio, "raio"
-        self.retorna_ponto_atraves_angulo((5*pi)/4, raio)
-
+        self.ptc_x, self.ptc_y, self.ptc_x_inv, self.ptc_y_inv = self.retorna_pontos_metade_entre_vetores(self.pt1_x,  self.pt1_y, self.pt2_x, self.pt2_y, raio)
         return self.ptc_x, self.ptc_y, self.ptc_x_inv, self.ptc_y_inv
 
 if __name__ == '__main__':
-    # DefinirLargura().iniciar_codigo()
-    print PtCircBorda(-9,-8,-4,-8,-9,-13).ponto_circ_borda()
+    DefinirLargura().iniciar_codigo()
 tempo =  time.clock() - tempo
 
 print tempo
