@@ -21,9 +21,9 @@ class DefinirLargura():
         self.spatial_proj_lambert = 'PROJCS["SIRGAS_2000_Lambert_Conformal_Conic_PA",GEOGCS["GCS_SIRGAS_2000",DATUM["D_SIRGAS_2000",SPHEROID["GRS_1980",6378137.0,298.257222101]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]],PROJECTION["Lambert_Conformal_Conic"],PARAMETER["False_Easting",0.0],PARAMETER["False_Northing",0.0],PARAMETER["Central_Meridian",-52.5],PARAMETER["Standard_Parallel_1",-0.5],PARAMETER["Standard_Parallel_2",-6.833333333333333],PARAMETER["Latitude_Of_Origin",-3.666667],UNIT["Meter",1.0]]'
         self.raio = 50
         self.primeiro_teste_circ = True
-        self.raio_pr = self.raio
-        self.compri_linha_largura_x1 = self.raio_pr*0.75
-        self.compri_linha_largura_x2 = self.raio_pr*0.85
+        self.raio
+        self.compri_linha_largura_x1 = self.raio*0.75
+        self.compri_linha_largura_x2 = self.raio*0.85
         self.dict_partes = {}
 
     def funcao_multipart(self, linha, ponto):
@@ -55,6 +55,8 @@ class DefinirLargura():
             elif self.primeiro_teste_circ:
                 self.primeiro_teste_circ = False
                 self.raio = compri_linha_largura/0.8
+                self.compri_linha_largura_x1 = self.raio*0.75
+                self.compri_linha_largura_x2 = self.raio*0.85
             else:
                 if porc_raio_largura <= 80:
                     self.compri_linha_raio_x2 = self.raio
@@ -64,7 +66,6 @@ class DefinirLargura():
                 self.raio = (self.compri_linha_raio_x1 + self.compri_linha_raio_x2)/2
         if self.distancia_pt_inicial == 2400:
             print self.raio
-
         return teste_validacao
 
     def ponto_meio(self, list_partes, ponto):
@@ -110,6 +111,7 @@ class DefinirLargura():
         loops_validacao = 0
         self.contador_raio_extremidade = 0
         while teste_validacao == False:
+            self.dict_partes = {}
             self.buffer_poligono_borda = ponto.projectAs(self.spatial_proj_lambert).buffer(self.raio).projectAs(self.spatial_geo_sirgas_2000)
             if self.distancia_pt_inicial == 2400:
                 print self.raio
@@ -162,6 +164,12 @@ class DefinirLargura():
             for parte_linha in self.dict_partes:
                 if self.dict_partes[parte_linha]["cruza_ponto"] == False:
                     linha_nao_intersecta_ponto = self.dict_partes[parte_linha]["linha_geometria"]
+
+            if self.distancia_pt_inicial == 2400:
+                CopyFeatures_management(linha_circulo, self.diretorio_saida + "/" + "linha_circulo_funcao_primeira_normal" + "_" + str(self.contador_raio_extremidade) + str(self.distancia_pt_inicial) + ".shp")
+                CopyFeatures_management(linha_nao_intersecta_ponto, self.diretorio_saida + "/" + "linha_nao_intersecta_ponto" + "_" + str(self.contador_raio_extremidade) + str(self.distancia_pt_inicial) + ".shp")
+
+
             if linha_circulo.disjoint(linha_nao_intersecta_ponto):
                 array.removeAll()
                 point_circ = Point()
@@ -171,9 +179,18 @@ class DefinirLargura():
                 linha_circulo = Polyline(array,self.spatial_geo_sirgas_2000)
                 linha_largura = linha_circulo.intersect(self.poligono_ma_geo, 2)
                 array.removeAll()
+                if self.distancia_pt_inicial == 2400:
+                    print self.raio
             else:
                 linha_largura = linha_circulo.intersect(self.poligono_ma_geo, 2)
                 array.removeAll()
+                if self.distancia_pt_inicial == 2400:
+                    print self.raio
+
+            if self.distancia_pt_inicial == 2400:
+                CopyFeatures_management(linha_largura, self.diretorio_saida + "/" + "linha_largura_funcao" + "_" + str(self.contador_raio_extremidade) + str(self.distancia_pt_inicial) + ".shp")
+                CopyFeatures_management(linha_circulo, self.diretorio_saida + "/" + "linha_circulo_funcao" + "_" + str(self.contador_raio_extremidade) + str(self.distancia_pt_inicial) + ".shp")
+                print self.raio
             return linha_largura, linha_circulo
 
     def pontos_aolongo_linha(self):
@@ -197,7 +214,7 @@ class DefinirLargura():
                 dict_descricao = self.ponto_buffer(ponto)
                 compri_ok = True
                 print dict_descricao
-            if self.distancia_pt_inicial > 2300:
+            if self.distancia_pt_inicial == 2400:
                 CopyFeatures_management(dict_descricao["linha_largura"], self.diretorio_saida + "/linha_largura" + str(self.distancia_pt_inicial) + ".shp")
                 CopyFeatures_management(dict_descricao["linha_circulo"], self.diretorio_saida + "/linha_circulo" + str(self.distancia_pt_inicial) + ".shp")
                 CopyFeatures_management(self.buffer_poligono_borda, self.diretorio_saida + "/buffer_poligono_borda" + str(self.distancia_pt_inicial) + ".shp")
