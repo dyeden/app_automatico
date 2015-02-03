@@ -43,32 +43,32 @@ class DefinirLargura():
 
     def validar_circulo(self,tipo_circulo, dict_descricao):
         teste_validacao = False
-        if tipo_circulo == "meio":
-            linha_largura = dict_descricao["linha_largura"]
-            linha_circulo = dict_descricao["linha_circulo"]
-            compri_linha_largura = linha_largura.projectAs(self.spatial_proj_lambert).length
-            compri_linha_circulo = linha_circulo.projectAs(self.spatial_proj_lambert).length
-            porc_raio_largura = (compri_linha_largura/compri_linha_circulo)*100
-            #print compri_linha_largura, "compri_linha_largura", compri_linha_circulo, "compri_linha_circulo", porc_raio_largura, "porc_raio_largura"
-            if 75 < porc_raio_largura < 85:
-                teste_validacao = True
-            elif self.primeiro_teste_circ:
-                self.primeiro_teste_circ = False
-                self.raio = compri_linha_largura/0.8
-                self.compri_linha_largura_x1 = self.raio*0.75
-                self.compri_linha_largura_x2 = self.raio*0.85
-            else:
-                if porc_raio_largura <= 80:
-                    self.compri_linha_raio_x2 = self.raio
+        if dict_descricao:
+            if tipo_circulo == "meio":
+                linha_largura = dict_descricao["linha_largura"]
+                linha_circulo = dict_descricao["linha_circulo"]
+                compri_linha_largura = linha_largura.projectAs(self.spatial_proj_lambert).length
+                compri_linha_circulo = linha_circulo.projectAs(self.spatial_proj_lambert).length
+                porc_raio_largura = (compri_linha_largura/compri_linha_circulo)*100
+                #print compri_linha_largura, "compri_linha_largura", compri_linha_circulo, "compri_linha_circulo", porc_raio_largura, "porc_raio_largura"
+                if 75 < porc_raio_largura < 85:
+                    teste_validacao = True
+                elif self.primeiro_teste_circ:
+                    self.primeiro_teste_circ = False
+                    self.raio = compri_linha_largura/0.8
+                    self.compri_linha_largura_x1 = self.raio*0.75
+                    self.compri_linha_largura_x2 = self.raio*0.85
                 else:
-                    self.compri_linha_raio_x1 = self.raio
-                print self.compri_linha_raio_x1, "self.compri_linha_raio_x1", self.compri_linha_raio_x2, "self.compri_linha_raio_x2"
-                self.raio = (self.compri_linha_raio_x1 + self.compri_linha_raio_x2)/2
-        elif tipo_circulo == "extremidade":
-            angulo_rad = dict_descricao["angulo_rad"]
-            #TODO problema nessa parte
-            if angulo_rad <= (5*pi)/6:
-                teste_validacao == True
+                    if porc_raio_largura <= 80:
+                        self.compri_linha_raio_x2 = self.raio
+                    else:
+                        self.compri_linha_raio_x1 = self.raio
+                    print self.compri_linha_raio_x1, "self.compri_linha_raio_x1", self.compri_linha_raio_x2, "self.compri_linha_raio_x2"
+                    self.raio = (self.compri_linha_raio_x1 + self.compri_linha_raio_x2)/2
+            elif tipo_circulo == "extremidade":
+                angulo_rad = dict_descricao["angulo_rad"]
+                if angulo_rad <= (5*pi)/6:
+                    teste_validacao = True
         return teste_validacao
 
     def ponto_meio(self, list_partes, ponto):
@@ -102,6 +102,8 @@ class DefinirLargura():
                 ptc_x, ptc_y = self.ponto_meio(list_partes,ponto)
                 self.tipo_circulo = "meio"
                 dict_circulo = {"ptc_x": ptc_x, "ptc_y": ptc_y}
+            else:
+                self.raio += 10
         elif self.tipo_circulo == "extremidade":
             angulo_rad = self.ponto_extremidade()
             dict_circulo["angulo_rad"] = angulo_rad
@@ -139,17 +141,13 @@ class DefinirLargura():
                 elif self.tipo_circulo == "extremidade":
                     dict_descricao["tipo"] = "extremidade"
                     dict_descricao["angulo_rad"] = dict_circulo["angulo_rad"]
-
             teste_validacao = self.validar_circulo(self.tipo_circulo, dict_descricao)
             loops_validacao += 1
-            if self.distancia_pt_inicial == 3390:
-                print self.raio
             # except:
-                CopyFeatures_management(self.buffer_poligono_borda, self.diretorio_saida + "/" + "buffer_poligono_borda" + "_" + str(loops_validacao)  + "_" + str(self.distancia_pt_inicial) + ".shp")
-                CopyFeatures_management(ponto, self.diretorio_saida + "/" + "ponto" + "_" + str(loops_validacao) + "_" + str(self.distancia_pt_inicial) + ".shp")
+            #     CopyFeatures_management(self.buffer_poligono_borda, self.diretorio_saida + "/" + "buffer_poligono_borda" + "_" + str(loops_validacao)  + "_" + str(self.distancia_pt_inicial) + ".shp")
+            #     CopyFeatures_management(ponto, self.diretorio_saida + "/" + "ponto" + "_" + str(loops_validacao) + "_" + str(self.distancia_pt_inicial) + ".shp")
             #     CopyFeatures_management(self.linha_ma_sirgas, self.diretorio_saida + "/" + "linha_ma_sirgas" + "_" + str(loops_validacao) + str(self.distancia_pt_inicial) + ".shp")
             #     print teste_validacao
-
         return dict_descricao
 
     def linha_de_largura(self, dict_descricao, ponto):
@@ -163,7 +161,6 @@ class DefinirLargura():
             for parte_linha in self.dict_partes:
                 if self.dict_partes[parte_linha]["cruza_ponto"] == False:
                     linha_nao_intersecta_ponto = self.dict_partes[parte_linha]["linha_geometria"]
-
             if linha_circulo.disjoint(linha_nao_intersecta_ponto):
                 array.removeAll()
                 point_circ = Point()
@@ -184,31 +181,21 @@ class DefinirLargura():
         compri_total = linha_lambert.length
         compri_linha_largura = self.raio*0.8
         self.distancia_pt_inicial = 0
-        list_pts = []
+        self.distancia_lado_oposto_inicial_pt = None
+        self.extremidades = []
         while self.distancia_pt_inicial < compri_total:
-            # try:
             print "self.distancia_pt_inicial", self.distancia_pt_inicial
-            bool_extremid_poligono = False
-            dict_descricao = {}
             self.primeiro_teste_circ = True
-            compri_ok = False
             self.compri_linha_raio_x1 = compri_linha_largura/1.1
             self.compri_linha_raio_x2 = compri_linha_largura/0.5
-            while compri_ok == False:
-                ponto = linha_lambert.positionAlongLine(self.distancia_pt_inicial).projectAs(self.spatial_geo_sirgas_2000)
-                self.ponto = ponto
-                self.ponto_5m = ponto.projectAs(self.spatial_proj_lambert).buffer(5).projectAs(self.spatial_geo_sirgas_2000)
-                dict_descricao = self.ponto_buffer(ponto)
-                compri_ok = True
-            #     print dict_descricao
-            # if self.distancia_pt_inicial == 2400:
-                if self.tipo_circulo == "meio":
-                    CopyFeatures_management(dict_descricao["linha_largura"], self.diretorio_saida + "/linha_largura" + str(self.distancia_pt_inicial) + ".shp")
-            #     CopyFeatures_management(dict_descricao["linha_circulo"], self.diretorio_saida + "/linha_circulo" + str(self.distancia_pt_inicial) + ".shp")
-            #     CopyFeatures_management(self.buffer_poligono_borda, self.diretorio_saida + "/buffer_poligono_borda" + str(self.distancia_pt_inicial) + ".shp")
-            self.distancia_pt_inicial += 30
-            # except:
-            #     self.distancia_pt_inicial += 30
+            ponto = linha_lambert.positionAlongLine(self.distancia_pt_inicial).projectAs(self.spatial_geo_sirgas_2000)
+            self.ponto = ponto
+            self.ponto_5m = ponto.projectAs(self.spatial_proj_lambert).buffer(5).projectAs(self.spatial_geo_sirgas_2000)
+            dict_descricao = self.ponto_buffer(ponto)
+            if self.tipo_circulo == "meio":
+                CopyFeatures_management(dict_descricao["linha_largura"], self.diretorio_saida + "/linha_largura" + str(self.distancia_pt_inicial) + ".shp")
+                self.distancia_pt_inicial += 30
+
     def selecionar_poligono(self, layer_massa_dagua):
         with da.SearchCursor(layer_massa_dagua,["OID@","SHAPE@"],"FID = 35") as cursor:
             for row in cursor:
