@@ -182,7 +182,8 @@ class DefinirLargura():
         compri_linha_largura = self.raio*0.8
         self.distancia_pt_inicial = 0
         self.distancia_lado_oposto_inicial_pt = None
-        self.extremidades = []
+        self.identificador_extremidade = False
+        controlador_poligono = ControlePoligono()
         while self.distancia_pt_inicial < compri_total:
             print "self.distancia_pt_inicial", self.distancia_pt_inicial
             self.primeiro_teste_circ = True
@@ -193,8 +194,17 @@ class DefinirLargura():
             self.ponto_5m = ponto.projectAs(self.spatial_proj_lambert).buffer(5).projectAs(self.spatial_geo_sirgas_2000)
             dict_descricao = self.ponto_buffer(ponto)
             if self.tipo_circulo == "meio":
+                self.identificador_extremidade = False
                 CopyFeatures_management(dict_descricao["linha_largura"], self.diretorio_saida + "/linha_largura" + str(self.distancia_pt_inicial) + ".shp")
                 self.distancia_pt_inicial += 30
+                if self.distancia_pt_inicial == 0:
+                    controlador_poligono.ponto_0_tipo == "meio"
+            elif self.tipo_circulo == "extremidade":
+                if self.identificador_extremidade == False:
+                    self.identificador_extremidade = True
+                    controlador_poligono.contador_n_extremidades += 1
+                self.distancia_pt_inicial += 30
+
 
     def selecionar_poligono(self, layer_massa_dagua):
         with da.SearchCursor(layer_massa_dagua,["OID@","SHAPE@"],"FID = 35") as cursor:
@@ -209,6 +219,23 @@ class DefinirLargura():
         mkdir(self.diretorio_saida)
         MakeFeatureLayer_management(self.diretorio_entrada + "/MASSA_DAGUA.shp", "MASSA_DAGUA")
         self.selecionar_poligono("MASSA_DAGUA")
+
+class ControlePoligono():
+    def __init__(self):
+        self.contador_n_extremidades = 0
+        self.ponto_0_tipo = None
+        self.ponto_oposto_0_distancia = None
+
+    def mudar_distancia(self):
+        if self.ponto_0_tipo == "meio":
+            if self.contador_n_extremidades == 1:
+                return self.ponto_oposto_0_distancia
+        return False
+
+    def finalizar_poligono(self):
+        if self.contador_n_extremidades == 2:
+            return True
+        return False
 
 class PtCircBorda(object):
     def __init__(self, x0, y0, pt1_x = None, pt1_y = None, pt2_x = None, pt2_y = None):
