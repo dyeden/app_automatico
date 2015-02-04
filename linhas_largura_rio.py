@@ -12,7 +12,6 @@ env.outputMFlag = "Disabled"
 env.outputZFlag = "Disabled"
 
 class DefinirLargura():
-
     def __init__(self):
         diretorio = path.dirname(path.dirname(argv[0]))
         self.diretorio_saida = diretorio + "/SAIDA"
@@ -143,11 +142,6 @@ class DefinirLargura():
                     dict_descricao["angulo_rad"] = dict_circulo["angulo_rad"]
             teste_validacao = self.validar_circulo(self.tipo_circulo, dict_descricao)
             loops_validacao += 1
-            # except:
-            #     CopyFeatures_management(self.buffer_poligono_borda, self.diretorio_saida + "/" + "buffer_poligono_borda" + "_" + str(loops_validacao)  + "_" + str(self.distancia_pt_inicial) + ".shp")
-            #     CopyFeatures_management(ponto, self.diretorio_saida + "/" + "ponto" + "_" + str(loops_validacao) + "_" + str(self.distancia_pt_inicial) + ".shp")
-            #     CopyFeatures_management(self.linha_ma_sirgas, self.diretorio_saida + "/" + "linha_ma_sirgas" + "_" + str(loops_validacao) + str(self.distancia_pt_inicial) + ".shp")
-            #     print teste_validacao
         return dict_descricao
 
     def linha_de_largura(self, dict_descricao, ponto):
@@ -181,11 +175,15 @@ class DefinirLargura():
         compri_total = linha_lambert.length
         compri_linha_largura = self.raio*0.8
         self.distancia_pt_inicial = 0
+        self.contador_pontos_linha = 0
         self.distancia_lado_oposto_inicial_pt = None
         self.identificador_extremidade = False
         controlador_poligono = ControlePoligono()
+        self.dict_linhas_completo = {}
+        intervalo_entre_linhas = 30
         while self.distancia_pt_inicial < compri_total:
             print "self.distancia_pt_inicial", self.distancia_pt_inicial
+            self.dict_linhas_completo[self.contador_pontos_linha] = {}
             self.primeiro_teste_circ = True
             self.compri_linha_raio_x1 = compri_linha_largura/1.1
             self.compri_linha_raio_x2 = compri_linha_largura/0.5
@@ -195,30 +193,45 @@ class DefinirLargura():
             dict_descricao = self.ponto_buffer(ponto)
             if self.tipo_circulo == "meio":
                 self.identificador_extremidade = False
-                CopyFeatures_management(dict_descricao["linha_largura"], self.diretorio_saida + "/linha_largura" + str(self.distancia_pt_inicial) + ".shp")
-                self.distancia_pt_inicial += 30
-                if self.distancia_pt_inicial == 0:
-                    controlador_poligono.ponto_0_tipo == "meio"
-                    controlador_poligono.ponto_oposto_0_distancia
-
+                if self.contador_pontos_linha == 0:
+                    controlador_poligono.ponto_0_tipo = "meio"
+                    linha_circulo_pt_0 = dict_descricao["linha_circulo"]
+                if self.contador_pontos_linha == 1:
+                    controlador_poligono.ponto_oposto_0_distancia = controlador_poligono.calcular_distancia_oposta(linha_circulo_pt_0,ponto, self.linha_ma_sirgas, self.diretorio_saida)
+                self.distancia_pt_inicial += intervalo_entre_linhas
+                self.dict_linhas_completo[self.contador_pontos_linha]["linha_largura"] = dict_descricao["linha_largura"]
+                self.dict_linhas_completo[self.contador_pontos_linha]["tipo"] = "meio"
             elif self.tipo_circulo == "extremidade":
                 if self.identificador_extremidade == False:
                     self.identificador_extremidade = True
                     controlador_poligono.contador_n_extremidades += 1
-                self.distancia_pt_inicial += 30
-
+                if controlador_poligono.mudar_distancia() == "mudar":
+                    self.distancia_pt_inicial = controlador_poligono.ponto_oposto_0_distancia
+                elif controlador_poligono.mudar_distancia() == "finalizar":
+                    break
+                self.distancia_pt_inicial += intervalo_entre_linhas
+            self.contador_pontos_linha += 1
 
     def selecionar_poligono(self, layer_massa_dagua):
         with da.SearchCursor(layer_massa_dagua,["OID@","SHAPE@"],"FID = 35") as cursor:
             for row in cursor:
+                diretorio_poligono = self.diretorio_saida + "/LINHAS/LINHAS_FID_" + str(row[0]) + ".shp"
+                CreateFeatureclass_management(self.diretorio_saida + "/LINHAS", "LINHAS_FID_" + str(row[0]) + ".shp", "POLYLINE", "", "", "",
+                                      self.spatial_geo_sirgas_2000)
                 self.poligono_ma_geo = row[1].projectAs(SpatialReference(4674))
                 self.pontos_aolongo_linha()
+                cursor_insert = da.InsertCursor(diretorio_poligono, ['Id', 'SHAPE@'])
+                for n in  range(self.dict_linhas_completo.__len__()):
+                    if self.dict_linhas_completo[n]:
+                        cursor_insert.insertRow((n, self.dict_linhas_completo[n]["linha_largura"]))
+                del cursor_insert
         del cursor
 
     def iniciar_codigo(self):
         if path.exists(self.diretorio_saida):
             rmtree(self.diretorio_saida)
         mkdir(self.diretorio_saida)
+        mkdir(self.diretorio_saida + "/LINHAS")
         MakeFeatureLayer_management(self.diretorio_entrada + "/MASSA_DAGUA.shp", "MASSA_DAGUA")
         self.selecionar_poligono("MASSA_DAGUA")
 
@@ -227,17 +240,36 @@ class ControlePoligono():
         self.contador_n_extremidades = 0
         self.ponto_0_tipo = None
         self.ponto_oposto_0_distancia = None
+        self.spatial_geo_sirgas_2000 = 'GEOGCS["GCS_SIRGAS_2000",DATUM["D_SIRGAS_2000",SPHEROID["GRS_1980",6378137.0,298.257222101]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]]'
+        self.spatial_proj_lambert = 'PROJCS["SIRGAS_2000_Lambert_Conformal_Conic_PA",GEOGCS["GCS_SIRGAS_2000",DATUM["D_SIRGAS_2000",SPHEROID["GRS_1980",6378137.0,298.257222101]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]],PROJECTION["Lambert_Conformal_Conic"],PARAMETER["False_Easting",0.0],PARAMETER["False_Northing",0.0],PARAMETER["Central_Meridian",-52.5],PARAMETER["Standard_Parallel_1",-0.5],PARAMETER["Standard_Parallel_2",-6.833333333333333],PARAMETER["Latitude_Of_Origin",-3.666667],UNIT["Meter",1.0]]'
 
     def mudar_distancia(self):
         if self.ponto_0_tipo == "meio":
             if self.contador_n_extremidades == 1:
-                return self.ponto_oposto_0_distancia
-        return False
+                return "mudar"
+            elif self.contador_n_extremidades == 2:
+                return "finalizar"
+        return None
 
     def finalizar_poligono(self):
         if self.contador_n_extremidades == 2:
             return True
         return False
+
+    def calcular_distancia_oposta(self,linha_circulo, ponto_1, poligono_ma_sirgas, diretorio_saida):
+        linha_circulo_buffer = linha_circulo.projectAs(self.spatial_proj_lambert).buffer(1).projectAs(self.spatial_geo_sirgas_2000)
+        linha_ma_cortado = poligono_ma_sirgas.difference(linha_circulo_buffer)
+        if  linha_ma_cortado.isMultipart:
+            for n in range(linha_ma_cortado.partCount):
+                parte = linha_ma_cortado.getPart(n)
+                linha_ma_parte = Polyline(parte, self.spatial_geo_sirgas_2000)
+                if linha_ma_parte.disjoint(ponto_1):
+                    pass
+                else:
+                    linha_ma_distancia = linha_ma_parte.projectAs(self.spatial_proj_lambert).length + 1
+        return linha_ma_distancia
+
+
 
 class PtCircBorda(object):
     def __init__(self, x0, y0, pt1_x = None, pt1_y = None, pt2_x = None, pt2_y = None):
