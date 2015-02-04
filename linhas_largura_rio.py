@@ -199,6 +199,8 @@ class DefinirLargura():
                 self.distancia_pt_inicial += 30
                 if self.distancia_pt_inicial == 0:
                     controlador_poligono.ponto_0_tipo == "meio"
+                    controlador_poligono.ponto_oposto_0_distancia
+
             elif self.tipo_circulo == "extremidade":
                 if self.identificador_extremidade == False:
                     self.identificador_extremidade = True
