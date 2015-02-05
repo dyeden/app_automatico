@@ -227,13 +227,12 @@ class DefinirLargura():
                 del cursor_insert
         del cursor
 
-    def iniciar_codigo(self):
+    def iniciar_codigo(self, layer_massa_dagua = None):
         if path.exists(self.diretorio_saida):
             rmtree(self.diretorio_saida)
         mkdir(self.diretorio_saida)
         mkdir(self.diretorio_saida + "/LINHAS")
-        MakeFeatureLayer_management(self.diretorio_entrada + "/MASSA_DAGUA.shp", "MASSA_DAGUA")
-        self.selecionar_poligono("MASSA_DAGUA")
+        self.selecionar_poligono(layer_massa_dagua)
 
 class ControlePoligono():
     def __init__(self):
@@ -268,7 +267,6 @@ class ControlePoligono():
                 else:
                     linha_ma_distancia = linha_ma_parte.projectAs(self.spatial_proj_lambert).length + 1
         return linha_ma_distancia
-
 
 
 class PtCircBorda(object):
@@ -383,6 +381,6 @@ class PtCircBorda(object):
 
 if __name__ == '__main__':
     DefinirLargura().iniciar_codigo()
-tempo =  time.clock() - tempo
+    tempo =  time.clock() - tempo
 
-print tempo
+    print tempo
