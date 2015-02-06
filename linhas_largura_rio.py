@@ -197,7 +197,8 @@ class DefinirLargura():
                     controlador_poligono.ponto_0_tipo = "meio"
                     linha_circulo_pt_0 = dict_descricao["linha_circulo"]
                 if self.contador_pontos_linha == 1:
-                    controlador_poligono.ponto_oposto_0_distancia = controlador_poligono.calcular_distancia_oposta(linha_circulo_pt_0,ponto, self.linha_ma_sirgas, self.diretorio_saida)
+                    controlador_poligono.ponto_oposto_0_distancia = controlador_poligono\
+                        .calcular_distancia_oposta(linha_circulo_pt_0,ponto, self.linha_ma_sirgas, self.diretorio_saida)
                 self.distancia_pt_inicial += intervalo_entre_linhas
                 self.dict_linhas_completo[self.contador_pontos_linha]["linha_largura"] = dict_descricao["linha_largura"]
                 self.dict_linhas_completo[self.contador_pontos_linha]["tipo"] = "meio"
