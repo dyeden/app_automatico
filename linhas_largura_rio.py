@@ -1,7 +1,6 @@
 __author__ = 'DYEDEN'
 import time
 tempo = time.clock()
-
 from arcpy import Array , SelectLayerByLocation_management, MakeFeatureLayer_management, da, SelectLayerByAttribute_management, CopyFeatures_management, AddField_management, \
         Point, Polyline, Polygon, Describe, Extent, SpatialReference, CreateFeatureclass_management, Exists, Dissolve_management, Delete_management, env, ListFields
 from math import sqrt, acos, degrees, sin,cos, tan, pi, atan

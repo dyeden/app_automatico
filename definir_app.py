@@ -43,6 +43,7 @@ class DefinirApp():
                         buffer_poligono_unido = buffer_poligono
         CopyFeatures_management(buffer_poligono_unido, self.diretorio_saida + "/app_total.shp")
         del cursor
+
     def ler_linhas_largura(self):
         return  MakeFeatureLayer_management(self.diretorio_saida + "/LINHAS/LINHAS_FID_35.shp", "LINHA_LARGURA")
 
