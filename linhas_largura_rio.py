@@ -213,7 +213,7 @@ class DefinirLargura():
             self.contador_pontos_linha += 1
 
     def selecionar_poligono(self, layer_massa_dagua):
-        with da.SearchCursor(layer_massa_dagua,["OID@","SHAPE@"],"FID = 35") as cursor:
+        with da.SearchCursor(layer_massa_dagua,["OID@","SHAPE@"],"FID = 1") as cursor:
             for row in cursor:
                 diretorio_poligono = self.diretorio_saida + "/LINHAS/LINHAS_FID_" + str(row[0]) + ".shp"
                 CreateFeatureclass_management(self.diretorio_saida + "/LINHAS", "LINHAS_FID_" + str(row[0]) + ".shp", "POLYLINE", "", "", "",
@@ -239,8 +239,16 @@ class ControlePoligono():
         self.contador_n_extremidades = 0
         self.ponto_0_tipo = None
         self.ponto_oposto_0_distancia = None
-        self.spatial_geo_sirgas_2000 = 'GEOGCS["GCS_SIRGAS_2000",DATUM["D_SIRGAS_2000",SPHEROID["GRS_1980",6378137.0,298.257222101]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]]'
-        self.spatial_proj_lambert = 'PROJCS["SIRGAS_2000_Lambert_Conformal_Conic_PA",GEOGCS["GCS_SIRGAS_2000",DATUM["D_SIRGAS_2000",SPHEROID["GRS_1980",6378137.0,298.257222101]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]],PROJECTION["Lambert_Conformal_Conic"],PARAMETER["False_Easting",0.0],PARAMETER["False_Northing",0.0],PARAMETER["Central_Meridian",-52.5],PARAMETER["Standard_Parallel_1",-0.5],PARAMETER["Standard_Parallel_2",-6.833333333333333],PARAMETER["Latitude_Of_Origin",-3.666667],UNIT["Meter",1.0]]'
+        self.spatial_geo_sirgas_2000 = 'GEOGCS["GCS_SIRGAS_2000",DATUM["D_SIRGAS_2000",' \
+                                       'SPHEROID["GRS_1980",6378137.0,298.257222101]],PRIMEM["Greenwich",0.0],' \
+                                       'UNIT["Degree",0.0174532925199433]]'
+        self.spatial_proj_lambert = 'PROJCS["SIRGAS_2000_Lambert_Conformal_Conic_PA",GEOGCS["GCS_SIRGAS_2000",' \
+                                    'DATUM["D_SIRGAS_2000",SPHEROID["GRS_1980",6378137.0,298.257222101]],' \
+                                    'PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]],' \
+                                    'PROJECTION["Lambert_Conformal_Conic"],PARAMETER["False_Easting",0.0],' \
+                                    'PARAMETER["False_Northing",0.0],PARAMETER["Central_Meridian",-52.5],' \
+                                    'PARAMETER["Standard_Parallel_1",-0.5],PARAMETER["Standard_Parallel_2",-6.833333333333333],' \
+                                    'PARAMETER["Latitude_Of_Origin",-3.666667],UNIT["Meter",1.0]]'
 
     def mudar_distancia(self):
         if self.ponto_0_tipo == "meio":

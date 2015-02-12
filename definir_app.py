@@ -50,7 +50,7 @@ class DefinirApp():
     def iniciar_codigo(self):
         from app_automatico import linhas_largura_rio
         linhas_de_largura_var = linhas_largura_rio.DefinirLargura()
-        MakeFeatureLayer_management(self.diretorio_entrada + "/MASSA_DAGUA.shp", "MASSA_DAGUA")
+        MakeFeatureLayer_management(self.diretorio_entrada + "/MASSA_DAGUA_2.shp", "MASSA_DAGUA")
         linhas_de_largura_var.iniciar_codigo("MASSA_DAGUA")
         self.gerar_app_circulo_buffer(self.ler_linhas_largura())
 
