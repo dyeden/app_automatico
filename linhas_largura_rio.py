@@ -23,6 +23,7 @@ class DefinirLargura():
         self.compri_linha_largura_x1 = self.raio*0.75
         self.compri_linha_largura_x2 = self.raio*0.85
         self.dict_partes = {}
+        self.dict_poligono_tipo = {}
 
     def funcao_multipart(self, linha, ponto):
         list_partes = []
@@ -54,8 +55,10 @@ class DefinirLargura():
                 elif self.primeiro_teste_circ:
                     self.primeiro_teste_circ = False
                     self.raio = compri_linha_largura/0.8
-                    self.compri_linha_largura_x1 = self.raio*0.75
-                    self.compri_linha_largura_x2 = self.raio*0.85
+                    # self.compri_linha_largura_x1 = self.raio*0.75
+                    # self.compri_linha_largura_x2 = self.raio*0.85
+                    self.compri_linha_raio_x1 = compri_linha_largura/1.1
+                    self.compri_linha_raio_x2 = compri_linha_largura/0.5
                 else:
                     if porc_raio_largura <= 80:
                         self.compri_linha_raio_x2 = self.raio
@@ -106,11 +109,11 @@ class DefinirLargura():
             angulo_rad = self.ponto_extremidade()
             dict_circulo["angulo_rad"] = angulo_rad
         else:
-            self.raio += 10
+            self.raio += self.raio*2
             self.contador_raio_extremidade += 1
             if self.contador_raio_extremidade >= 3:
                 if self.contador_raio_extremidade == 3:
-                    self.raio = self.raio - 30
+                    self.raio = self.raio/pow(2,3)
                 self.tipo_circulo = "extremidade"
         return self.tipo_circulo, dict_circulo
 
@@ -140,6 +143,8 @@ class DefinirLargura():
                     dict_descricao["tipo"] = "extremidade"
                     dict_descricao["angulo_rad"] = dict_circulo["angulo_rad"]
             teste_validacao = self.validar_circulo(self.tipo_circulo, dict_descricao)
+            # if self.distancia_pt_inicial == 240:
+            # CopyFeatures_management(self.buffer_poligono_borda, self.diretorio_saida + "/RESIDUOS/buffer_poligono_borda" + "_" + str(self.distancia_pt_inicial) + "_" + str(loops_validacao) + ".shp")
             loops_validacao += 1
         return dict_descricao
 
@@ -213,26 +218,27 @@ class DefinirLargura():
             self.contador_pontos_linha += 1
 
     def selecionar_poligono(self, layer_massa_dagua):
-        with da.SearchCursor(layer_massa_dagua,["OID@","SHAPE@"],"FID = 1") as cursor:
+        with da.SearchCursor(layer_massa_dagua,["OID@","SHAPE@"]) as cursor:
             for row in cursor:
-                diretorio_poligono = self.diretorio_saida + "/LINHAS/LINHAS_FID_" + str(row[0]) + ".shp"
+                self.dict_poligono_tipo[row[0]] = {"tipo":"poligono_simples"}
+                diretorio_linhas = self.diretorio_saida + "/LINHAS/LINHAS_FID_" + str(row[0]) + ".shp"
                 CreateFeatureclass_management(self.diretorio_saida + "/LINHAS", "LINHAS_FID_" + str(row[0]) + ".shp", "POLYLINE", "", "", "",
                                       self.spatial_geo_sirgas_2000)
+                AddField_management(diretorio_linhas,"largura_m","Double")
                 self.poligono_ma_geo = row[1].projectAs(SpatialReference(4674))
                 self.pontos_aolongo_linha()
-                cursor_insert = da.InsertCursor(diretorio_poligono, ['Id', 'SHAPE@'])
+                cursor_insert = da.InsertCursor(diretorio_linhas, ['Id', 'SHAPE@', "largura_m"])
                 for n in  range(self.dict_linhas_completo.__len__()):
                     if self.dict_linhas_completo[n]:
-                        cursor_insert.insertRow((n, self.dict_linhas_completo[n]["linha_largura"]))
+                        linha_largura_poly = self.dict_linhas_completo[n]["linha_largura"]
+                        comprimento = linha_largura_poly.projectAs(self.spatial_proj_lambert).length
+                        cursor_insert.insertRow((n, linha_largura_poly, comprimento))
                 del cursor_insert
         del cursor
 
     def iniciar_codigo(self, layer_massa_dagua = None):
-        if path.exists(self.diretorio_saida):
-            rmtree(self.diretorio_saida)
-        mkdir(self.diretorio_saida)
-        mkdir(self.diretorio_saida + "/LINHAS")
         self.selecionar_poligono(layer_massa_dagua)
+        return self.dict_poligono_tipo
 
 class ControlePoligono():
     def __init__(self):
