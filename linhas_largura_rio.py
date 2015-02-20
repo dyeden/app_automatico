@@ -1,8 +1,8 @@
 __author__ = 'DYEDEN'
 import time
 tempo = time.clock()
-from arcpy import Array , SelectLayerByLocation_management, MakeFeatureLayer_management, da, SelectLayerByAttribute_management, CopyFeatures_management, AddField_management, \
-        Point, Polyline, Polygon, Describe, Extent, SpatialReference, CreateFeatureclass_management, Exists, Dissolve_management, Delete_management, env, ListFields
+from arcpy import Array, da, AddField_management, \
+        Point, Polyline, SpatialReference, CreateFeatureclass_management, Exists, Dissolve_management, Delete_management, env, ListFields
 from math import sqrt, acos, degrees, sin,cos, tan, pi, atan
 from os import path, mkdir
 from shutil import rmtree
@@ -49,14 +49,11 @@ class DefinirLargura():
                 compri_linha_largura = linha_largura.projectAs(self.spatial_proj_lambert).length
                 compri_linha_circulo = linha_circulo.projectAs(self.spatial_proj_lambert).length
                 porc_raio_largura = (compri_linha_largura/compri_linha_circulo)*100
-                #print compri_linha_largura, "compri_linha_largura", compri_linha_circulo, "compri_linha_circulo", porc_raio_largura, "porc_raio_largura"
                 if 75 < porc_raio_largura < 85:
                     teste_validacao = True
                 elif self.primeiro_teste_circ:
                     self.primeiro_teste_circ = False
                     self.raio = compri_linha_largura/0.8
-                    # self.compri_linha_largura_x1 = self.raio*0.75
-                    # self.compri_linha_largura_x2 = self.raio*0.85
                     self.compri_linha_raio_x1 = compri_linha_largura/1.1
                     self.compri_linha_raio_x2 = compri_linha_largura/0.5
                 else:
@@ -146,6 +143,8 @@ class DefinirLargura():
             # if self.distancia_pt_inicial == 240:
             # CopyFeatures_management(self.buffer_poligono_borda, self.diretorio_saida + "/RESIDUOS/buffer_poligono_borda" + "_" + str(self.distancia_pt_inicial) + "_" + str(loops_validacao) + ".shp")
             loops_validacao += 1
+            if loops_validacao > 30:
+                raise Exception("erro")
         return dict_descricao
 
     def linha_de_largura(self, dict_descricao, ponto):
@@ -184,7 +183,7 @@ class DefinirLargura():
         self.identificador_extremidade = False
         controlador_poligono = ControlePoligono()
         self.dict_linhas_completo = {}
-        intervalo_entre_linhas = 30
+        intervalo_entre_linhas = 10
         while self.distancia_pt_inicial < compri_total:
             print "self.distancia_pt_inicial", self.distancia_pt_inicial
             self.dict_linhas_completo[self.contador_pontos_linha] = {}
@@ -217,28 +216,26 @@ class DefinirLargura():
                 self.distancia_pt_inicial += intervalo_entre_linhas
             self.contador_pontos_linha += 1
 
-    def selecionar_poligono(self, layer_massa_dagua):
-        with da.SearchCursor(layer_massa_dagua,["OID@","SHAPE@"]) as cursor:
-            for row in cursor:
-                self.dict_poligono_tipo[row[0]] = {"tipo":"poligono_simples"}
-                diretorio_linhas = self.diretorio_saida + "/LINHAS/LINHAS_FID_" + str(row[0]) + ".shp"
-                CreateFeatureclass_management(self.diretorio_saida + "/LINHAS", "LINHAS_FID_" + str(row[0]) + ".shp", "POLYLINE", "", "", "",
-                                      self.spatial_geo_sirgas_2000)
-                AddField_management(diretorio_linhas,"largura_m","Double")
-                self.poligono_ma_geo = row[1].projectAs(SpatialReference(4674))
-                self.pontos_aolongo_linha()
-                cursor_insert = da.InsertCursor(diretorio_linhas, ['Id', 'SHAPE@', "largura_m"])
-                for n in  range(self.dict_linhas_completo.__len__()):
-                    if self.dict_linhas_completo[n]:
-                        linha_largura_poly = self.dict_linhas_completo[n]["linha_largura"]
-                        comprimento = linha_largura_poly.projectAs(self.spatial_proj_lambert).length
-                        cursor_insert.insertRow((n, linha_largura_poly, comprimento))
-                del cursor_insert
-        del cursor
+    def selecionar_tipo_poligono(self, fid_n, shape_massa_dagua):
+        dict_poligono = {}
+        dict_poligono = {"tipo":"poligono_simples"}
+        diretorio_linhas = self.diretorio_saida + "/LINHAS/LINHAS_FID_" + str(fid_n) + ".shp"
+        CreateFeatureclass_management(self.diretorio_saida + "/LINHAS", "LINHAS_FID_" + str(fid_n) + ".shp", "POLYLINE", "", "", "",
+                              self.spatial_geo_sirgas_2000)
+        AddField_management(diretorio_linhas,"largura_m","Double")
+        self.poligono_ma_geo = shape_massa_dagua.projectAs(SpatialReference(4674))
+        self.pontos_aolongo_linha()
+        cursor_insert = da.InsertCursor(diretorio_linhas, ['Id', 'SHAPE@', "largura_m"])
+        for n in  range(self.dict_linhas_completo.__len__()):
+            if self.dict_linhas_completo[n]:
+                linha_largura_poly = self.dict_linhas_completo[n]["linha_largura"]
+                comprimento = linha_largura_poly.projectAs(self.spatial_proj_lambert).length
+                cursor_insert.insertRow((n, linha_largura_poly, comprimento))
+        del cursor_insert
+        return dict_poligono
 
-    def iniciar_codigo(self, layer_massa_dagua = None):
-        self.selecionar_poligono(layer_massa_dagua)
-        return self.dict_poligono_tipo
+    def iniciar_codigo(self, fid_n, shape_massa_dagua = None):
+        return self.selecionar_tipo_poligono(fid_n, shape_massa_dagua)
 
 class ControlePoligono():
     def __init__(self):
@@ -330,9 +327,7 @@ class PtCircBorda(object):
     def eq_ang_entre_vetores(self, ponto1_x, ponto1_y, ponto2_x, ponto2_y):
         vetor_pt1_x, vetor_pt1_y = self.converter_pontos_para_vetores_circ(ponto1_x, ponto1_y)
         vetor_pt2_x, vetor_pt2_y = self.converter_pontos_para_vetores_circ(ponto2_x, ponto2_y)
-        ## produto escalar ###
         produto_esc = vetor_pt1_x*vetor_pt2_x + vetor_pt1_y*vetor_pt2_y
-        ## magnitude dos vetores ###
         magnitude_vetor_pt1 = sqrt(pow(vetor_pt1_x,2) + pow(vetor_pt1_y,2))
         magnitude_vetor_pt2 = sqrt(pow(vetor_pt2_x,2) + pow(vetor_pt2_y,2))
         angulo_rad = acos(produto_esc/(magnitude_vetor_pt1*magnitude_vetor_pt2))

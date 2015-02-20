@@ -44,28 +44,45 @@ class DefinirApp():
                         buffer_poligono_unido = buffer_poligono
         CopyFeatures_management(buffer_poligono_unido, diretorio_app)
         del cursor
-        
-    def ler_linhas_largura(self):
-        for FID in self.dict_poligono_tipo:
-            if self.dict_poligono_tipo[FID]["tipo"] == "poligono_simples":
-                self.dict_poligono_tipo[FID]["layer"] = MakeFeatureLayer_management(self.diretorio_saida + "/LINHAS/LINHAS_FID_" + str(FID) + ".shp", "LINHA_LARGURA_"  + str(FID))
+
+    def ler_linhas_largura(self, tipo):
+        if tipo == "poligono_simples":
+            self.dict_poligono_tipo[self.FID]["layer"] = MakeFeatureLayer_management(self.diretorio_saida + "/LINHAS/LINHAS_FID_" + str(self.FID) + ".shp", "LINHA_LARGURA_"  + str(self.FID))
+
+    def tipo_de_poligono(self, fid_n, shape_massa_dagua):
+        from app_automatico import linhas_largura_rio
+        linhas_de_largura_var = linhas_largura_rio.DefinirLargura()
+        return linhas_de_largura_var.iniciar_codigo(fid_n, shape_massa_dagua)
+
+    def criar_app(self, layer_massa_dagua):
+        self.dict_poligono_tipo = {}
+        with da.SearchCursor(layer_massa_dagua, ["OID@", "SHAPE@"]) as cursor:
+            for row in cursor:
+                self.FID = row[0]
+                try:
+                    self.dict_poligono_tipo[self.FID] = self.tipo_de_poligono(self.FID, row[1])
+                    self.ler_linhas_largura(self.dict_poligono_tipo[self.FID]["tipo"])
+                    diretorio_app = self.diretorio_saida + "/APP/APP_FID_" + str(self.FID) + ".shp"
+                    self.gerar_app_circulo_buffer(self.dict_poligono_tipo[self.FID]["layer"], diretorio_app)
+                    print self.dict_poligono_tipo
+                except:
+                    print self.FID, "nao_funcionou"
+        del cursor
 
     def iniciar_codigo(self):
-        from app_automatico import linhas_largura_rio
         if path.exists(self.diretorio_saida):
             rmtree(self.diretorio_saida)
         mkdir(self.diretorio_saida)
         mkdir(self.diretorio_saida + "/LINHAS")
         mkdir(self.diretorio_saida + "/RESIDUOS")
         mkdir(self.diretorio_saida + "/APP")
-        linhas_de_largura_var = linhas_largura_rio.DefinirLargura()
         MakeFeatureLayer_management(self.diretorio_entrada + "/MASSA_DAGUA_2.shp", "MASSA_DAGUA")
-        self.dict_poligono_tipo = linhas_de_largura_var.iniciar_codigo("MASSA_DAGUA")
-        self.ler_linhas_largura()
-        for FID in self.dict_poligono_tipo:
-            diretorio_app = self.diretorio_saida + "/APP/APP_FID_" + str(FID) + ".shp"
-            self.gerar_app_circulo_buffer(self.dict_poligono_tipo[FID]["layer"], diretorio_app)
-        print self.dict_poligono_tipo
+        self.criar_app("MASSA_DAGUA")
+        # self.ler_linhas_largura()
+        # for FID in self.dict_poligono_tipo:
+        #     diretorio_app = self.diretorio_saida + "/APP/APP_FID_" + str(FID) + ".shp"
+        #     self.gerar_app_circulo_buffer(self.dict_poligono_tipo[FID]["layer"], diretorio_app)
+        # print self.dict_poligono_tipo
 
 if __name__ == '__main__':
     DefinirApp().iniciar_codigo()
