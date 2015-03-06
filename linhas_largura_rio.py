@@ -2,7 +2,8 @@ __author__ = 'DYEDEN'
 import time
 tempo = time.clock()
 from arcpy import Array, da, AddField_management, \
-        Point, Polyline, SpatialReference, CreateFeatureclass_management, Exists, Dissolve_management, Delete_management, env, ListFields
+    Point, Polyline, SpatialReference, CreateFeatureclass_management, \
+    Exists, Dissolve_management, Delete_management, env, ListFields, CopyFeatures_management
 from math import sqrt, acos, degrees, sin,cos, tan, pi, atan
 from os import path, mkdir
 from shutil import rmtree
@@ -141,7 +142,8 @@ class DefinirLargura():
                     dict_descricao["angulo_rad"] = dict_circulo["angulo_rad"]
             teste_validacao = self.validar_circulo(self.tipo_circulo, dict_descricao)
             # if self.distancia_pt_inicial == 240:
-            # CopyFeatures_management(self.buffer_poligono_borda, self.diretorio_saida + "/RESIDUOS/buffer_poligono_borda" + "_" + str(self.distancia_pt_inicial) + "_" + str(loops_validacao) + ".shp")
+            CopyFeatures_management(self.buffer_poligono_borda, self.diretorio_saida + "/RESIDUOS/buffer_poligono_borda" + "_" + str(self.distancia_pt_inicial) + "_" + str(loops_validacao) + ".shp")
+            CopyFeatures_management(ponto, self.diretorio_saida + "/RESIDUOS/ponto" + "_" + str(self.distancia_pt_inicial) + "_" + str(loops_validacao) + ".shp")
             loops_validacao += 1
             if loops_validacao > 30:
                 raise Exception("erro")

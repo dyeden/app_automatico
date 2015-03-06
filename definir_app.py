@@ -47,7 +47,8 @@ class DefinirApp():
 
     def ler_linhas_largura(self, tipo):
         if tipo == "poligono_simples":
-            self.dict_poligono_tipo[self.FID]["layer"] = MakeFeatureLayer_management(self.diretorio_saida + "/LINHAS/LINHAS_FID_" + str(self.FID) + ".shp", "LINHA_LARGURA_"  + str(self.FID))
+            self.dict_poligono_tipo[self.FID]["layer"] = MakeFeatureLayer_management(self.diretorio_saida +
+                                                                                     "/LINHAS/LINHAS_FID_" + str(self.FID) + ".shp", "LINHA_LARGURA_"  + str(self.FID))
 
     def tipo_de_poligono(self, fid_n, shape_massa_dagua):
         from app_automatico import linhas_largura_rio
@@ -76,7 +77,7 @@ class DefinirApp():
         mkdir(self.diretorio_saida + "/LINHAS")
         mkdir(self.diretorio_saida + "/RESIDUOS")
         mkdir(self.diretorio_saida + "/APP")
-        MakeFeatureLayer_management(self.diretorio_entrada + "/MASSA_DAGUA_2.shp", "MASSA_DAGUA")
+        MakeFeatureLayer_management(self.diretorio_entrada + "/MASSA_DAGUA_2.shp", "MASSA_DAGUA", "FID = 10")
         self.criar_app("MASSA_DAGUA")
         # self.ler_linhas_largura()
         # for FID in self.dict_poligono_tipo:
