@@ -3,7 +3,7 @@ import arcpy
 from largura_rios.definir_linhas import DefinirLinhas
 class DefinirApp():
     def __init__(self):
-        self.diretorio_entrada = "C:\Users\DYEDEN\PycharmProjects\APP_AUTOMATICO\ENTRADA"
+        self.diretorio_entrada = "E:\user\dyeden.monteiro\PycharmProjects\APP_AUTOMATICO\ENTRADA\MASSA_DAGUA.shp"
         self.diretorio_saida = "E:\user\dyeden.monteiro\PycharmProjects\APP_AUTOMATICO\SAIDA"
         self.spatial_geo_sirgas_2000 = 'GEOGCS["GCS_SIRGAS_2000",DATUM["D_SIRGAS_2000",SPHEROID["GRS_1980",' \
                                        '6378137.0,298.257222101]],PRIMEM["Greenwich",0.0],' \
@@ -19,7 +19,6 @@ class DefinirApp():
 
     def gerar_app(self, id, poligono, tipo):
         "gerar app de acordo com o tipo de dado"
-
         if tipo == "MASSA_DAGUA":
             obj_linhas = DefinirLinhas()
             obj_linhas.poligono = poligono
