@@ -1,4 +1,3 @@
-import arcpy
 def pontos_aolongo_linha(linha_borda, intervalo, projecao_plana, projecao_geo):
     linha_plana = linha_borda.projectAs(projecao_plana)
     lista_pontos = []

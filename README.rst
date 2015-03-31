@@ -9,8 +9,6 @@ app_automatico
         :target: https://pypi.python.org/pypi/app_automatico
 
 
-Python Boilerplate contains all the boilerplate you need to create a Python package.
-
 * Free software: BSD license
 * Documentation: https://app_automatico.readthedocs.org.
 

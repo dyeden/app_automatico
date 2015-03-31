@@ -17,7 +17,8 @@ class DefinirLinhas():
     def dissecar_poligono(self):
         "gerar os pontos que percorrera as bordas do poligono, gerar borda"
         self.borda_poligono = self.poligono.boundary()
-        pontos_aolongo_linha(self.borda_poligono, self.intervalo_entre_linhas, self.projecao_plana, self.projecao_geo)
+        self.lista_pontos = \
+            pontos_aolongo_linha(self.borda_poligono, self.intervalo_entre_linhas, self.projecao_plana, self.projecao_geo)
 
 
     def tipo_poligono(self):
