@@ -1,5 +1,12 @@
 from arcpy import Polyline
-def funcao_multipart(linha, ponto, projecao_plana, projecao_geo):
+projecao_plana = None
+projecao_geo = None
+intervalo_entre_linhas = None
+poligono = None
+borda_linha_geo = None
+borda_linha_plana = None
+
+def funcao_multipart(linha, ponto):
     list_partes = []
     dict_partes = {}
     if linha.isMultipart:
@@ -19,25 +26,23 @@ def funcao_multipart(linha, ponto, projecao_plana, projecao_geo):
 
 
 
-def pontos_aolongo_linha(linha_borda, intervalo, projecao_plana, projecao_geo):
-    linha_plana = linha_borda.projectAs(projecao_plana)
+def pontos_aolongo_linha():
     lista_pontos = []
-    compri_total = linha_plana.length
+    compri_total = borda_linha_plana.length
     compri_atual = 0
     while compri_atual < compri_total:
-        print compri_atual
-        ponto = linha_plana.positionAlongLine(compri_atual).projectAs(projecao_geo)
+        ponto = borda_linha_plana.positionAlongLine(compri_atual).projectAs(projecao_geo)
         lista_pontos.append((ponto,compri_atual))
         compri_atual += 10
     return lista_pontos
 
-def calc_ponto_buffer(ponto, raio, projecao_plana, projecao_geo):
+def calc_ponto_buffer(ponto, raio):
     "criar buffer a partir de um ponto"
     ponto_buffer_plana = ponto.projectAs(projecao_plana).buffer(raio)
     ponto_buffer_geo = ponto_buffer_plana.projectAs(projecao_geo)
     return ponto_buffer_geo
 
-def circulo_de_borda_filtro(ponto, circ_borda, borda_poligono, raio):
+def circulo_de_borda_filtro(ponto, circ_borda, raio):
     "filtrar tipo de circulo"
     linha_buffer_inter = circ_borda.intersect(borda_poligono, 2)
     list_partes =  funcao_multipart(linha_buffer_inter)

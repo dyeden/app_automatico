@@ -142,8 +142,8 @@ class DefinirLargura():
                     dict_descricao["angulo_rad"] = dict_circulo["angulo_rad"]
             teste_validacao = self.validar_circulo(self.tipo_circulo, dict_descricao)
 
-            CopyFeatures_management(self.buffer_poligono_borda, self.diretorio_saida + "/RESIDUOS/buffer_poligono_borda" + "_" + str(self.distancia_pt_inicial) + "_" + str(loops_validacao) + ".shp")
-            CopyFeatures_management(ponto, self.diretorio_saida + "/RESIDUOS/ponto" + "_" + str(self.distancia_pt_inicial) + "_" + str(loops_validacao) + ".shp")
+            # CopyFeatures_management(self.buffer_poligono_borda, self.diretorio_saida + "/RESIDUOS/buffer_poligono_borda" + "_" + str(self.distancia_pt_inicial) + "_" + str(loops_validacao) + ".shp")
+            # CopyFeatures_management(ponto, self.diretorio_saida + "/RESIDUOS/ponto" + "_" + str(self.distancia_pt_inicial) + "_" + str(loops_validacao) + ".shp")
             loops_validacao += 1
             if loops_validacao > 30:
                 raise Exception("erro")
@@ -219,7 +219,6 @@ class DefinirLargura():
             self.contador_pontos_linha += 1
 
     def selecionar_tipo_poligono(self, fid_n, shape_massa_dagua):
-        dict_poligono = {}
         dict_poligono = {"tipo":"poligono_simples"}
         diretorio_linhas = self.diretorio_saida + "/LINHAS/LINHAS_FID_" + str(fid_n) + ".shp"
         CreateFeatureclass_management(self.diretorio_saida + "/LINHAS", "LINHAS_FID_" + str(fid_n) + ".shp", "POLYLINE", "", "", "",

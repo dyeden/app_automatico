@@ -1,4 +1,4 @@
-from func_linhas import *
+import func_linhas
 class DefinirLinhas():
     def __init__(self):
         self.poligono = None
@@ -13,14 +13,17 @@ class DefinirLinhas():
         self.raio = 50
         self.intervalo_entre_linhas = 10
         self.lista_pontos = None
-        self.borda_poligono = None
+        self.borda_linha_geo = None
+        self.borda_linha_plana = None
 
     def dissecar_poligono(self):
         "gerar os pontos que percorrera as bordas do poligono, gerar borda"
-        self.borda_poligono = self.poligono.boundary()
+        self.borda_linha_geo = self.poligono.boundary()
+        self.borda_linha_plana = self.borda_linha_geo.projectAs(self.projecao_plana)
+        func_linhas.borda_linha_geo = self.borda_linha_geo
+        func_linhas.borda_linha_plana = self.borda_linha_plana
         self.lista_pontos = \
-            pontos_aolongo_linha(self.borda_poligono, self.intervalo_entre_linhas, self.projecao_plana, self.projecao_geo)
-
+            func_linhas.pontos_aolongo_linha()
 
     def tipo_poligono(self):
         "descreve qual o tipo de poligono"
@@ -33,17 +36,23 @@ class DefinirLinhas():
     def montar_linhas(self):
         "montar linhas para rio"
         for ponto, distancia in self.lista_pontos:
-            calc_tipo_ponto_buffer(
-                ponto, self.raio, self.borda_poligono, self.projecao_plana, self.projecao_geo
+            func_linhas.calc_tipo_ponto_buffer(
+                ponto, self.raio
             )
 
-
+    def registrar_variaveis_func_linhas(self):
+        func_linhas.projecao_plana = self.projecao_plana
+        func_linhas.projecao_geo = self.projecao_geo
+        func_linhas.intervalo_entre_linhas = self.intervalo_entre_linhas
+        func_linhas.poligono = self.poligono
 
     def iniciar(self):
         print "iniciar o script"
+        self.registrar_variaveis_func_linhas()
         self.tipo_poligono()
         if self.dict_poligono_descricao["tipo"] == "rio":
             self.dissecar_poligono()
             self.montar_linhas()
+
 
         return self.dict_poligono_descricao

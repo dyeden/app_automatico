@@ -78,7 +78,7 @@ class DefinirApp():
         mkdir(self.diretorio_saida + "/LINHAS")
         mkdir(self.diretorio_saida + "/RESIDUOS")
         mkdir(self.diretorio_saida + "/APP")
-        MakeFeatureLayer_management(self.diretorio_entrada + "/MASSA_DAGUA_2.shp", "MASSA_DAGUA", "FID = 10")
+        MakeFeatureLayer_management(self.diretorio_entrada + "/MASSA_DAGUA.shp", "MASSA_DAGUA")
         self.criar_app("MASSA_DAGUA")
         # self.ler_linhas_largura()
         # for FID in self.dict_poligono_tipo:
