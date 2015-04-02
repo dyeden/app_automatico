@@ -5,7 +5,8 @@ class DefinirLinhas():
         self.dict_poligono_descricao =   {
             "tipo": None,
             "subtipo":None,
-            "metadados": None
+            "metadados": None,
+            "n_extremidades": 0
 
         }
         self.projecao_plana = None
@@ -37,10 +38,11 @@ class DefinirLinhas():
         "montar linhas para rio"
         for ponto, distancia in self.lista_pontos:
             func_linhas.calc_tipo_ponto_buffer(
-                ponto, self.raio
+                ponto, self.raio, self.dict_poligono_descricao
             )
 
     def registrar_variaveis_func_linhas(self):
+        "registra as variaveis necessarias para o script func_linhas"
         func_linhas.projecao_plana = self.projecao_plana
         func_linhas.projecao_geo = self.projecao_geo
         func_linhas.intervalo_entre_linhas = self.intervalo_entre_linhas
