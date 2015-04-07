@@ -156,26 +156,22 @@ def circulo_de_borda_filtro(ponto, circ_borda, raio, dict_circulo, n_extremidade
     return tipo_circulo, angulo_rad, raio, pontos_medios
 
 
-def calc_tipo_ponto_buffer(ponto, raio, dict_poligono_descricao):
+def calc_tipo_circ_borda(ponto, raio, dict_poligono_descricao, dict_circ_desc):
     """tipo de buffer"""
     x_ptc = ponto.getPart().X
     y_ptc = ponto.getPart().Y
-    validar_pt_buffer = False
-
-    while not validar_pt_buffer:
-        circ_borda = calc_circ_borda(ponto, raio)
-        linha_buffer_inter = circ_borda.intersect(borda_linha_geo, 2)
-        dict_circ_desc["partes"] =  funcao_multipart(linha_buffer_inter, ponto)
-        tipo_circulo, angulo_rad, raio, pontos_medios = \
-            circulo_de_borda_filtro(ponto, circ_borda, raio, dict_circ_desc,
-            dict_poligono_descricao["n_extremidades"])
-        dict_circ_desc["tipo_circulo"] = tipo_circulo
-        dict_circ_desc["pt_medios_circ"] = pontos_medios
-        dict_circ_desc["angulo_rad"] = angulo_rad
-        linha_largura, linha_circulo = calc_linhas_largura(dict_circ_desc, ponto)
-        dict_circ_desc["linha_largura"] = linha_largura
-        dict_circ_desc["primeiro_teste"] = primeiro_cal_circ
-        dict_circ_desc["linha_circulo"] = linha_circulo
-        validar_pt_buffer, raio = aferir_circulo(dict_circ_desc, raio)
-        return linha_largura, linha_circulo
+    circ_borda = calc_circ_borda(ponto, raio)
+    linha_buffer_inter = circ_borda.intersect(borda_linha_geo, 2)
+    dict_circ_desc["partes"] =  funcao_multipart(linha_buffer_inter, ponto)
+    tipo_circulo, angulo_rad, raio, pontos_medios = \
+        circulo_de_borda_filtro(ponto, circ_borda, raio, dict_circ_desc,
+        dict_poligono_descricao["n_extremidades"])
+    dict_circ_desc["tipo_circulo"] = tipo_circulo
+    dict_circ_desc["pt_medios_circ"] = pontos_medios
+    dict_circ_desc["angulo_rad"] = angulo_rad
+    linha_largura, linha_circulo = calc_linhas_largura(dict_circ_desc, ponto)
+    dict_circ_desc["linha_largura"] = linha_largura
+    dict_circ_desc["primeiro_teste"] = primeiro_cal_circ
+    dict_circ_desc["linha_circulo"] = linha_circulo
+    return dict_circ_desc
 
