@@ -3,10 +3,14 @@ from ponto_circ_borda import PtCircBorda
 projecao_plana = None
 projecao_geo = None
 intervalo_entre_linhas = None
-poligono = None
+poligono_ma = None
 borda_linha_geo = None
 borda_linha_plana = None
+compri_linha_raio_x1 = None
+compri_linha_raio_x2 = None
+primeiro_cal_circ = True
 
+from math import pi
 def funcao_multipart(linha, ponto):
     dict_partes = {}
     if linha.isMultipart:
@@ -33,13 +37,14 @@ def pontos_aolongo_linha():
     return lista_pontos
 
 
-def ponto_meio(list_partes, ponto, dict_circulo, circ_borda):
-    "funcao para gerar o "
+def ponto_meio(ponto, dict_circulo, circ_borda):
+    """funcao para gerar o ponto metade"""
 
     x_ptc = dict_circulo["pt_centro_circ"]["x_ptc"]
     y_ptc = dict_circulo["pt_centro_circ"]["y_ptc"]
-    for parte in list_partes:
-        parte_linha = Polyline(parte, projecao_geo)
+
+    for parte_n in dict_circulo["partes"]:
+        parte_linha = Polyline(dict_circulo["partes"][parte_n]["linha_array"], projecao_geo)
         if parte_linha.disjoint(ponto):
             pontos_inte_linha_poligono = circ_borda.intersect(parte_linha,1)
             x_pt1 = pontos_inte_linha_poligono.getPart(0).X
@@ -58,14 +63,45 @@ def ponto_extremidade(self):
     angulo_rad = PtCircBorda(self.x_b,self.y_b).eq_ang_entre_vetores(self.pt1_x,self.pt1_y,self.pt2_x,self.pt2_y)
     return angulo_rad
 
+def aferir_circulo(dict_circ_desc,raio):
+    teste_validacao = False
+    if dict_circ_desc["tipo_circulo"] == "meio":
+        linha_largura = dict_circ_desc["linha_largura"]
+        linha_circulo = dict_circ_desc["linha_circulo"]
+        compri_linha_largura = linha_largura.projectAs(projecao_plana).length
+        compri_linha_circulo = linha_circulo.projectAs(projecao_plana).length
+        porc_raio_largura = (compri_linha_largura/compri_linha_circulo)*100
+        if 75 < porc_raio_largura < 85:
+            teste_validaco = True
+        elif dict_circ_desc["primeiro_teste"]:
+            primeiro_cal_circ = False
+
+            raio = compri_linha_largura/0.8
+            compri_linha_raio_x1 = compri_linha_largura/1.1
+            compri_linha_raio_x2 = compri_linha_largura/0.5
+
+
+        else:
+            if porc_raio_largura <= 80:
+                compri_linha_raio_x2 = raio
+            else:
+                compri_linha_raio_x1 = raio
+            raio = (compri_linha_raio_x1 + compri_linha_raio_x2)/2
+    elif dict_circ_desc["tipo_circulo"] == "extremidade":
+        angulo_rad = dict_circ_desc["angulo_rad"]
+        if angulo_rad <= (5*pi)/6:
+            teste_validacao = True
+    return teste_validacao, raio
+
+
 def calc_circ_borda(ponto, raio):
-    "criar buffer a partir de um ponto"
+    """criar buffer a partir de um ponto"""
     ponto_buffer_plana = ponto.projectAs(projecao_plana).buffer(raio)
     circ_borda = ponto_buffer_plana.projectAs(projecao_geo)
     return circ_borda
 
 def calc_linhas_largura(dict_circ_desc, ponto):
-    "criar linhas de largura"
+    """criar linhas de largura"""
     if dict_circ_desc["tipo_circulo"] == "meio":
         linha_nao_intersecta_ponto = None
         point_circ = Point()
@@ -74,7 +110,7 @@ def calc_linhas_largura(dict_circ_desc, ponto):
         array = Array([point_circ, ponto.getPart(0)])
         linha_circulo = Polyline(array, projecao_geo)
         for parte_linha in dict_circ_desc["partes"]:
-            if dict_circ_desc["partes"][parte_linha]["cruza_ponto"] == False:
+            if not dict_circ_desc["partes"][parte_linha]["cruza_ponto"]:
                 linha_nao_intersecta_ponto = dict_circ_desc["partes"][parte_linha]["linha_geometria"]
         if linha_circulo.disjoint(linha_nao_intersecta_ponto):
             array.removeAll()
@@ -83,24 +119,22 @@ def calc_linhas_largura(dict_circ_desc, ponto):
             point_circ.Y = dict_circ_desc["pt_medios_circ"]["y_ptm_inv"]
             array = Array([point_circ, ponto.getPart(0)])
             linha_circulo = Polyline(array, projecao_geo)
-            linha_largura = linha_circulo.intersect(borda_linha_geo, 2)
+            linha_largura = linha_circulo.intersect(poligono_ma, 2)
             array.removeAll()
         else:
-            linha_largura = linha_circulo.intersect(borda_linha_geo, 2)
+            linha_largura = linha_circulo.intersect(poligono_ma, 2)
             array.removeAll()
         return linha_largura, linha_circulo
 
 def circulo_de_borda_filtro(ponto, circ_borda, raio, dict_circulo, n_extremidades):
-    "filtrar tipo de circulo"
-    linha_buffer_inter = circ_borda.intersect(borda_linha_geo, 2)
-    dict_partes =  funcao_multipart(linha_buffer_inter, ponto)
+    """filtrar tipo de circulo"""
     tipo_circulo = dict_circulo["tipo_circulo"]
     angulo_rad = None
     pontos_medios = None
-    if list_partes:
+    if dict_circulo["partes"]:
 
-        if list_partes.__len__() == 2:
-            x_ptm, y_ptm, x_ptm_inv, y_ptm_inv = ponto_meio(list_partes, ponto, dict_circulo, circ_borda)
+        if dict_circulo["partes"].__len__() == 2:
+            x_ptm, y_ptm, x_ptm_inv, y_ptm_inv = ponto_meio(ponto, dict_circulo, circ_borda)
             tipo_circulo = "meio"
             pontos_medios = {"x_ptm": x_ptm, "y_ptm": y_ptm, "x_ptm_inv":x_ptm_inv, "y_ptm_inv":y_ptm_inv}
 
@@ -108,6 +142,7 @@ def circulo_de_borda_filtro(ponto, circ_borda, raio, dict_circulo, n_extremidade
             raio += 10
 
     elif tipo_circulo == "extremidade":
+        # noinspection PyArgumentList
         angulo_rad = ponto_extremidade()
 
     else:
@@ -115,34 +150,32 @@ def circulo_de_borda_filtro(ponto, circ_borda, raio, dict_circulo, n_extremidade
         n_extremidades += 1
         if n_extremidades >= 3:
             if n_extremidades == 3:
-                raio = raio/pow(2,3)
+                raio /= pow(2, 3)
             tipo_circulo = "extremidade"
 
-    return tipo_circulo, angulo_rad, raio, pontos_medios, list_partes
+    return tipo_circulo, angulo_rad, raio, pontos_medios
 
 
 def calc_tipo_ponto_buffer(ponto, raio, dict_poligono_descricao):
-    "tipo de buffer"
+    """tipo de buffer"""
     x_ptc = ponto.getPart().X
     y_ptc = ponto.getPart().Y
     validar_pt_buffer = False
-    dict_circ_desc ={
-    "partes":None,
-    "tipo_circulo":None,
-    "pt_centro_circ":{"x_ptc":x_ptc,"y_ptc":y_ptc},
-    "pt_medios_circ":{""},
-    "pts_outros_circ":{"x_pt1":None,"y_pt1":None, "x_pt2":None,"y_pt2":None}
-    }
-    while validar_pt_buffer == False:
+
+    while not validar_pt_buffer:
         circ_borda = calc_circ_borda(ponto, raio)
-        tipo_circulo, angulo_rad, raio, pontos_medios, list_partes = \
+        linha_buffer_inter = circ_borda.intersect(borda_linha_geo, 2)
+        dict_circ_desc["partes"] =  funcao_multipart(linha_buffer_inter, ponto)
+        tipo_circulo, angulo_rad, raio, pontos_medios = \
             circulo_de_borda_filtro(ponto, circ_borda, raio, dict_circ_desc,
             dict_poligono_descricao["n_extremidades"])
-        dict_circ_desc["partes"] = list_partes
         dict_circ_desc["tipo_circulo"] = tipo_circulo
         dict_circ_desc["pt_medios_circ"] = pontos_medios
+        dict_circ_desc["angulo_rad"] = angulo_rad
         linha_largura, linha_circulo = calc_linhas_largura(dict_circ_desc, ponto)
-
-        validar_pt_buffer = True
-
+        dict_circ_desc["linha_largura"] = linha_largura
+        dict_circ_desc["primeiro_teste"] = primeiro_cal_circ
+        dict_circ_desc["linha_circulo"] = linha_circulo
+        validar_pt_buffer, raio = aferir_circulo(dict_circ_desc, raio)
+        return linha_largura, linha_circulo
 
