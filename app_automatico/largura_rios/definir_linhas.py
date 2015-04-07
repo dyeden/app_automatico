@@ -12,6 +12,11 @@ class DefinirLinhas():
 
         }
         self.raio = 50
+
+        compri_linha_raio_x1 = None
+        compri_linha_raio_x2 = None
+        primeiro_cal_circ = True
+
         self.dict_circ_desc = {
             "partes":None,
             "tipo_circulo":None,
@@ -20,12 +25,12 @@ class DefinirLinhas():
             "pts_outros_circ":{"x_pt1":None,"y_pt1":None, "x_pt2":None,"y_pt2":None},
             "linha_largura":None,
             "linha_circulo":None,
-            "loop_teste":0,
+            "loop_validar":0,
             "distancia_pt_inicio":0,
             "compri_linha_raio_x1":0,
             "compri_linha_raio_x2":0,
             "angulo_rad":None,
-            "raio":self.raio
+            "raio":self.raio,
         }
 
 
@@ -59,13 +64,14 @@ class DefinirLinhas():
         "montar linhas para rio"
         for ponto, distancia in self.lista_pontos:
             validar_circulo = False
+            self.dict_circ_desc["loop_validar"] = 0
             while validar_circulo == False:
                 self.dict_circ_desc = func_linhas.calc_tipo_circ_borda(
-                    ponto, self.raio, self.dict_poligono_descricao, self.dict_circ_desc
+                    ponto, self.dict_poligono_descricao, self.dict_circ_desc
                 )
 
                 self.dict_circ_desc, validar_circulo = func_linhas.aferir_circulo(self.dict_circ_desc,self.raio)
-
+                self.dict_circ_desc["loop_validar"] += 1
 
     def registrar_variaveis_func_linhas(self):
         "registra as variaveis necessarias para o script func_linhas"
