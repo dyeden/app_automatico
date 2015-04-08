@@ -7,7 +7,7 @@ class DefinirLinhas():
         self.dict_poligono_descricao =   {
             "tipo": None,
             "subtipo":None,
-            "metadados": None,
+            "metadados":{"linhas":{}},
             "n_extremidades": 0
 
         }
@@ -18,8 +18,10 @@ class DefinirLinhas():
         primeiro_cal_circ = True
 
         self.dict_circ_desc = {
-            "partes":None,
+
             "tipo_circulo":None,
+            "circ_borda_geo":None,
+            "partes":None,
             "pt_centro_circ":{"x_ptc":None,"y_ptc":None},
             "pt_medios_circ":{""},
             "pts_outros_circ":{"x_pt1":None,"y_pt1":None, "x_pt2":None,"y_pt2":None},
@@ -63,15 +65,25 @@ class DefinirLinhas():
     def montar_linhas(self):
         "montar linhas para rio"
         for ponto, distancia in self.lista_pontos:
+            if distancia < 2035:
+                continue
+
             validar_circulo = False
             self.dict_circ_desc["loop_validar"] = 0
+            self.dict_circ_desc["distancia_pt_inicio"] = distancia
             while validar_circulo == False:
                 self.dict_circ_desc = func_linhas.calc_tipo_circ_borda(
                     ponto, self.dict_poligono_descricao, self.dict_circ_desc
                 )
 
-                self.dict_circ_desc, validar_circulo = func_linhas.aferir_circulo(self.dict_circ_desc,self.raio)
+                self.dict_circ_desc, validar_circulo = func_linhas.aferir_circulo(self.dict_circ_desc)
                 self.dict_circ_desc["loop_validar"] += 1
+
+            self.dict_poligono_descricao["metadados"]["linhas"][distancia] = {
+                "linha_largura":self.dict_circ_desc["linha_largura"],
+                "tipo":self.dict_circ_desc["tipo_circulo"]
+            }
+
 
     def registrar_variaveis_func_linhas(self):
         "registra as variaveis necessarias para o script func_linhas"
