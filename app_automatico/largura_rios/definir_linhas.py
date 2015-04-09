@@ -13,12 +13,7 @@ class DefinirLinhas():
         }
         self.raio = 50
 
-        compri_linha_raio_x1 = None
-        compri_linha_raio_x2 = None
-        primeiro_cal_circ = True
-
         self.dict_circ_desc = {
-
             "tipo_circulo":None,
             "circ_borda_geo":None,
             "partes":None,
@@ -32,6 +27,7 @@ class DefinirLinhas():
             "compri_linha_raio_x1":0,
             "compri_linha_raio_x2":0,
             "angulo_rad":None,
+            "n_loop_extremidade":0,
             "raio":self.raio,
         }
 
