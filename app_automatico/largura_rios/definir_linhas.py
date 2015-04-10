@@ -61,8 +61,9 @@ class DefinirLinhas():
     def montar_linhas(self):
         "montar linhas para rio"
         for ponto, distancia in self.lista_pontos:
-            if distancia < 2035:
-                continue
+            # if distancia < 2035:
+            #     continue
+            print distancia
 
             validar_circulo = False
             self.dict_circ_desc["loop_validar"] = 0
@@ -79,6 +80,8 @@ class DefinirLinhas():
                 "linha_largura":self.dict_circ_desc["linha_largura"],
                 "tipo":self.dict_circ_desc["tipo_circulo"]
             }
+            if ["tipo_circulo"] == "extremidade":
+                pass
 
 
     def registrar_variaveis_func_linhas(self):
