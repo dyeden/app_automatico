@@ -8,7 +8,9 @@ class DefinirLinhas():
             "tipo": None,
             "subtipo":None,
             "metadados":{"linhas":{}},
-            "n_extremidades": 0
+            "n_extremidades": 0,
+            "pt_ini":None,
+            "pt_ini_borda_oposta":None,
 
         }
         self.raio = 50
