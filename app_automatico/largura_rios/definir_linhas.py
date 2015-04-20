@@ -7,11 +7,31 @@ class DefinirLinhas():
         self.dict_poligono_descricao =   {
             "tipo": None,
             "subtipo":None,
-            "metadados":{"linhas":{}},
+            "metadados":{"linhas":{
+                0:{
+                    "id_linha_braco":None,
+                    "id_frente":None,
+                    "id_atras":None,
+                    "linha_largura":None,
+                    "linha_app":None,
+                    "braco":None,
+                    "distancia":None,
+                    "tipo":None,
+
+                }
+            },
+                         "bracos":{
+                             0:{
+                                 "pt_ini":None,
+                                 "pt_ini_oposto":None,
+                                 "n_extremidade":0,
+                                 "ponta":None,
+                                 "base":None
+                             }
+                         }},
             "n_extremidades": 0,
             "pt_ini":None,
             "pt_ini_borda_oposta":None,
-
         }
         self.raio = 50
 
@@ -39,7 +59,7 @@ class DefinirLinhas():
         self.intervalo_entre_linhas = 10
         self.compri_linha_raio_x1 = None
         self.compri_linha_raio_x2 = None
-        self.lista_pontos = None
+        self.dict_lista_pontos = None
         self.borda_linha_geo = None
         self.borda_linha_plana = None
 
@@ -49,7 +69,7 @@ class DefinirLinhas():
         self.borda_linha_plana = self.borda_linha_geo.projectAs(self.projecao_plana)
         func_linhas.borda_linha_geo = self.borda_linha_geo
         func_linhas.borda_linha_plana = self.borda_linha_plana
-        self.lista_pontos = \
+        self.dict_lista_pontos = \
             func_linhas.pontos_aolongo_linha()
 
     def tipo_poligono(self):
@@ -60,9 +80,34 @@ class DefinirLinhas():
         "definine qual o subtipo que o poligono rio pertence"
         self.dict_poligono_descricao["subtipo"] = "rio_simples"
 
+    def atualizar_poligono_descricao(self, id_linha, distancia, id_braco, id_linha_braco, ponto):
+        "atualiza as informacoes conforme o progresso de leitura da borda"
+
+        self.dict_poligono_descricao["metadados"]["linhas"][id_linha] = {
+                "id_linha_braco":id_linha_braco,
+                "id_frente":None,
+                "id_atras":None,
+                "linha_largura":self.dict_circ_desc["linha_largura"],
+                "linha_app":None,
+                "braco":None,
+                "distancia":distancia,
+                "tipo":self.dict_circ_desc["tipo_circulo"],
+            }
+        if id_linha == 0:
+            self.dict_poligono_descricao["metadados"]["bracos"][id_braco]["pt_ini"] = ponto
+        else:
+            self.dict_poligono_descricao["metadados"]["linhas"][id_linha]["id_atras"] = id_linha - 1
+            self.dict_poligono_descricao["metadados"]["linhas"][id_linha - 1]["id_frente"] = id_linha
+
     def montar_linhas(self):
         "montar linhas para rio"
-        for ponto, distancia in self.lista_pontos:
+        id_linha = 0
+        id_linha_braco = 0
+        id_braco = 0
+        distancia = 0
+        compri_total = self.dict_lista_pontos["compri_total"]
+        while distancia < compri_total:
+            ponto = self.dict_lista_pontos[distancia]
             # if distancia < 2035:
             #     continue
             print distancia
@@ -74,16 +119,14 @@ class DefinirLinhas():
                 self.dict_circ_desc = func_linhas.calc_tipo_circ_borda(
                     ponto, self.dict_poligono_descricao, self.dict_circ_desc
                 )
-
                 self.dict_circ_desc, validar_circulo = func_linhas.aferir_circulo(self.dict_circ_desc)
                 self.dict_circ_desc["loop_validar"] += 1
-
-            self.dict_poligono_descricao["metadados"]["linhas"][distancia] = {
-                "linha_largura":self.dict_circ_desc["linha_largura"],
-                "tipo":self.dict_circ_desc["tipo_circulo"]
-            }
-            if ["tipo_circulo"] == "extremidade":
+            self.atualizar_poligono_descricao(id_linha, distancia, id_braco, id_linha_braco, ponto)
+            if self.dict_circ_desc["tipo_circulo"] == "extremidade":
                 pass
+            id_linha += 1
+            id_linha_braco += 1
+            distancia += self.intervalo_entre_linhas
 
 
     def registrar_variaveis_func_linhas(self):

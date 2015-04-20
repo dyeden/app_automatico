@@ -24,14 +24,15 @@ def funcao_multipart(linha, ponto):
 
 
 def pontos_aolongo_linha():
-    lista_pontos = []
+    dict_lista_pontos = {}
     compri_total = borda_linha_plana.length
     compri_atual = 0
     while compri_atual < compri_total:
         ponto = borda_linha_plana.positionAlongLine(compri_atual).projectAs(projecao_geo)
-        lista_pontos.append((ponto,compri_atual))
+        dict_lista_pontos[compri_atual] = ponto
         compri_atual += 10
-    return lista_pontos
+        dict_lista_pontos["compri_total"] = compri_total
+    return dict_lista_pontos
 
 
 def ponto_meio(ponto, dict_circulo, circ_borda):
