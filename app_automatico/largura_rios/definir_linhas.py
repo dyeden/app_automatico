@@ -123,9 +123,12 @@ class DefinirLinhas():
                 self.dict_circ_desc["loop_validar"] += 1
             self.atualizar_poligono_descricao(id_linha, distancia, id_braco, id_linha_braco, ponto)
             if self.dict_circ_desc["tipo_circulo"] == "extremidade":
-                pass
+                print "extremidade"
+                print "parar aqui"
+
             id_linha += 1
             id_linha_braco += 1
+
             distancia += self.intervalo_entre_linhas
 
 

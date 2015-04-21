@@ -63,6 +63,8 @@ def ponto_extremidade(dict_circ_desc):
         dict_circ_desc["pt_centro_circ"]["y_ptc"]
                              ).eq_ang_entre_vetores(pt1_x, pt1_y, pt2_x, pt2_y)
     return angulo_rad
+def ponto_oposto(ponto, dict_circ_desc):
+    pass
 
 def aferir_circulo(dict_circ_desc):
     teste_validacao = False
