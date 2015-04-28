@@ -24,7 +24,7 @@ class DefinirLinhas():
                              0:{
                                  "pt_ini":None,
                                  "pt_ini_oposto":None,
-                                 "n_extremidade":0,
+                                 "n_extremidades":0,
                                  "ponta":None,
                                  "base":None
                              }
@@ -62,6 +62,7 @@ class DefinirLinhas():
         self.dict_lista_pontos = None
         self.borda_linha_geo = None
         self.borda_linha_plana = None
+        self.finalizar_linhas = False
 
     def dissecar_poligono(self):
         "gerar os pontos que percorrera as bordas do poligono, gerar borda"
@@ -93,6 +94,17 @@ class DefinirLinhas():
                 "distancia":distancia,
                 "tipo":self.dict_circ_desc["tipo_circulo"],
             }
+        if self.dict_poligono_descricao["metadados"]["bracos"][id_braco]["n_extremidades"] == 2:
+            self.finalizar_linhas = True
+        else:
+            self.dict_poligono_descricao["metadados"]["bracos"][id_braco] ={
+                                 "pt_ini":None,
+                                 "pt_ini_oposto":None,
+                                 "n_extremidades":0,
+                                 "ponta":None,
+                                 "base":None
+                             }
+
         if id_linha_braco == 0:
             ponto_oposto = func_linhas.ponto_oposto(ponto, self.dict_circ_desc)
             distancia_oposta = func_linhas.calc_distancia_oposta(self.dict_circ_desc, self.dict_lista_pontos[distancia+self.intervalo_entre_linhas])
@@ -102,6 +114,8 @@ class DefinirLinhas():
         if id_linha > 0:
             self.dict_poligono_descricao["metadados"]["linhas"][id_linha]["id_atras"] = id_linha - 1
             self.dict_poligono_descricao["metadados"]["linhas"][id_linha - 1]["id_frente"] = id_linha
+        if self.dict_circ_desc["tipo_circulo"] == "extremidade":
+            self.dict_poligono_descricao["metadados"]["bracos"][id_braco]["n_extremidades"] += 1
 
     def montar_linhas(self):
         "montar linhas para rio"
@@ -112,8 +126,7 @@ class DefinirLinhas():
         compri_total = self.dict_lista_pontos["compri_total"]
         while distancia < compri_total:
             ponto = self.dict_lista_pontos[distancia]
-            # if distancia < 2035:
-            #     continue
+
             print distancia
 
             validar_circulo = False
@@ -126,16 +139,14 @@ class DefinirLinhas():
                 self.dict_circ_desc, validar_circulo = func_linhas.aferir_circulo(self.dict_circ_desc)
                 self.dict_circ_desc["loop_validar"] += 1
             self.atualizar_poligono_descricao(id_linha, distancia, id_braco, id_linha_braco, ponto)
-
             if self.dict_circ_desc["tipo_circulo"] == "extremidade":
-
+                distancia = int(self.dict_poligono_descricao["metadados"]["bracos"][id_braco]['distancia_oposta']/10)*10
                 print "extremidade"
-
                 print "parar aqui"
-
+            if self.finalizar_linhas:
+                break
             id_linha += 1
             id_linha_braco += 1
-
             distancia += self.intervalo_entre_linhas
 
 
