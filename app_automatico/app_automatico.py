@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import arcpy
 from largura_rios.definir_linhas import DefinirLinhas
+from delimitar_app.app_rio import AppRio
 from os import path, mkdir
 from sys import argv
 from shutil import rmtree
@@ -10,6 +11,7 @@ class DefinirApp():
         diretorio = path.dirname(path.dirname(path.dirname(argv[0])))
         self.diretorio_entrada = diretorio + "\ENTRADA\MASSA_DAGUA.shp"
         self.diretorio_saida = diretorio + "\SAIDA"
+        self.dict_poligono_descricao = None
         self.spatial_geo_sirgas_2000 = 'GEOGCS["GCS_SIRGAS_2000",DATUM["D_SIRGAS_2000",SPHEROID["GRS_1980",' \
                                        '6378137.0,298.257222101]],PRIMEM["Greenwich",0.0],' \
                                        'UNIT["Degree",0.0174532925199433]]'
@@ -30,8 +32,10 @@ class DefinirApp():
             obj_linhas.diretorio_saida = self.diretorio_saida
             obj_linhas.projecao_plana = self.spatial_proj_lambert
             obj_linhas.projecao_geo = self.spatial_geo_sirgas_2000
-            obj_linhas.iniciar()
+            self.dict_poligono_descricao = obj_linhas.iniciar()
             del obj_linhas
+            obj_app_rio = AppRio()
+            obj_app_rio.dict_poligono_descricao = self.dict_poligono_descricao
 
     def salvar_dados(self):
         pass
