@@ -37,6 +37,7 @@ class DefinirApp():
             del obj_linhas
             obj_app_rio = AppRio()
             obj_app_rio.dict_poligono_descricao = self.dict_poligono_descricao
+            obj_app_rio.iniciar_codigo()
 
     def salvar_dados(self):
         pass

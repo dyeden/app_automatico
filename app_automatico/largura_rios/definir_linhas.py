@@ -130,6 +130,7 @@ class DefinirLinhas():
             if self.dict_circ_desc["tipo_circulo"] == "extremidade":
 
                 print "extremidade"
+
                 print "parar aqui"
 
             id_linha += 1
