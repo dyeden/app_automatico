@@ -5,7 +5,8 @@ from delimitar_app.app_rio import AppRio
 from os import path, mkdir
 from sys import argv
 from shutil import rmtree
-
+arcpy.env.outputMFlag = "Disabled"
+arcpy.env.outputZFlag = "Disabled"
 class DefinirApp():
     def __init__(self):
         diretorio = path.dirname(path.dirname(path.dirname(argv[0])))

@@ -1,4 +1,4 @@
-from arcpy import Polyline, Point, Array
+from arcpy import Polyline, Point, Array, PointGeometry
 from ponto_circ_borda import PtCircBorda
 projecao_plana = None
 projecao_geo = None
@@ -64,7 +64,26 @@ def ponto_extremidade(dict_circ_desc):
                              ).eq_ang_entre_vetores(pt1_x, pt1_y, pt2_x, pt2_y)
     return angulo_rad
 def ponto_oposto(ponto, dict_circ_desc):
-    pass
+    ponto_buffer = ponto.projectAs(projecao_plana).buffer(1).projectAs(projecao_geo)
+    for point in dict_circ_desc['linha_largura'].getPart(0):
+        pt =  PointGeometry(point, projecao_geo)
+        if pt.disjoint(ponto_buffer):
+            return pt
+
+def calc_distancia_oposta(dict_circ_desc, ponto_1):
+    linha_circulo = dict_circ_desc["linha_circulo"]
+    linha_circulo_buffer = linha_circulo.projectAs(projecao_plana).buffer(1).projectAs(projecao_geo)
+    linha_ma_cortado = poligono_ma.difference(linha_circulo_buffer)
+    if  linha_ma_cortado.isMultipart:
+        for n in range(linha_ma_cortado.partCount):
+            parte = linha_ma_cortado.getPart(n)
+            linha_ma_parte = Polyline(parte, projecao_geo)
+            if linha_ma_parte.disjoint(ponto_1):
+                pass
+            else:
+                linha_ma_distancia = linha_ma_parte.projectAs(projecao_plana).length + 1
+    return linha_ma_distancia
+
 
 def aferir_circulo(dict_circ_desc):
     teste_validacao = False

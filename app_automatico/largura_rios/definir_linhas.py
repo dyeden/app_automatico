@@ -93,9 +93,13 @@ class DefinirLinhas():
                 "distancia":distancia,
                 "tipo":self.dict_circ_desc["tipo_circulo"],
             }
-        if id_linha == 0:
+        if id_linha_braco == 0:
+            ponto_oposto = func_linhas.ponto_oposto(ponto, self.dict_circ_desc)
+            distancia_oposta = func_linhas.calc_distancia_oposta(self.dict_circ_desc, self.dict_lista_pontos[distancia+self.intervalo_entre_linhas])
             self.dict_poligono_descricao["metadados"]["bracos"][id_braco]["pt_ini"] = ponto
-        else:
+            self.dict_poligono_descricao["metadados"]["bracos"][id_braco]["pt_ini_oposto"] = ponto_oposto
+            self.dict_poligono_descricao["metadados"]["bracos"][id_braco]["distancia_oposta"] = distancia_oposta
+        if id_linha > 0:
             self.dict_poligono_descricao["metadados"]["linhas"][id_linha]["id_atras"] = id_linha - 1
             self.dict_poligono_descricao["metadados"]["linhas"][id_linha - 1]["id_frente"] = id_linha
 
@@ -122,7 +126,9 @@ class DefinirLinhas():
                 self.dict_circ_desc, validar_circulo = func_linhas.aferir_circulo(self.dict_circ_desc)
                 self.dict_circ_desc["loop_validar"] += 1
             self.atualizar_poligono_descricao(id_linha, distancia, id_braco, id_linha_braco, ponto)
+
             if self.dict_circ_desc["tipo_circulo"] == "extremidade":
+
                 print "extremidade"
                 print "parar aqui"
 
