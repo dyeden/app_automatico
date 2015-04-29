@@ -35,8 +35,12 @@ class DefinirApp():
             obj_linhas.projecao_geo = self.spatial_geo_sirgas_2000
             self.dict_poligono_descricao = obj_linhas.iniciar()
             del obj_linhas
+
             obj_app_rio = AppRio()
+            obj_app_rio.diretorio_saida =self.diretorio_saida
             obj_app_rio.dict_poligono_descricao = self.dict_poligono_descricao
+            obj_app_rio.projecao_plana = self.spatial_proj_lambert
+            obj_app_rio.projecao_geo = self.spatial_geo_sirgas_2000
             obj_app_rio.iniciar_codigo()
 
     def salvar_dados(self):
@@ -51,7 +55,6 @@ class DefinirApp():
         mkdir(self.diretorio_saida + "/APP")
         with arcpy.da.SearchCursor(self.diretorio_entrada + "\MASSA_DAGUA.shp", ["OID@", "SHAPE@"], "FID = 19") as cursor:
             for row in cursor:
-                print row[0]
                 self.gerar_app(row[0], row[1].projectAs(self.spatial_geo_sirgas_2000), "MASSA_DAGUA")
         del cursor
 if __name__ == '__main__':

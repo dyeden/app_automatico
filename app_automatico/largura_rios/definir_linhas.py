@@ -96,16 +96,17 @@ class DefinirLinhas():
             }
         if self.dict_poligono_descricao["metadados"]["bracos"][id_braco]["n_extremidades"] == 2:
             self.finalizar_linhas = True
-        else:
-            self.dict_poligono_descricao["metadados"]["bracos"][id_braco] ={
-                                 "pt_ini":None,
-                                 "pt_ini_oposto":None,
-                                 "n_extremidades":0,
-                                 "ponta":None,
-                                 "base":None
-                             }
+
 
         if id_linha_braco == 0:
+            self.dict_poligono_descricao["metadados"]["bracos"][id_braco] ={
+                     "pt_ini":None,
+                     "pt_ini_oposto":None,
+                     "n_extremidades":0,
+                     "ponta":None,
+                     "base":None,
+                     "distancia_oposta":None
+                 }
             ponto_oposto = func_linhas.ponto_oposto(ponto, self.dict_circ_desc)
             distancia_oposta = func_linhas.calc_distancia_oposta(self.dict_circ_desc, self.dict_lista_pontos[distancia+self.intervalo_entre_linhas])
             self.dict_poligono_descricao["metadados"]["bracos"][id_braco]["pt_ini"] = ponto
