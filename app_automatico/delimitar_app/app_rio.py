@@ -20,7 +20,7 @@ class AppRio():
             n += 1
         del cursor_insert
     def analisar_linhas(self):
-        for linha in self.dict_poligono_descricao["metadados"]["linhas"]:
+        for id_linha in self.dict_poligono_descricao["metadados"]["linhas"]:
             pass
     def iniciar_codigo(self):
         self.analisar_linhas()
