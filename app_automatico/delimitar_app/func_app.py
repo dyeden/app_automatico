@@ -9,6 +9,10 @@ from func_circulo import PtCircBorda
 def criar_linha_largura_app(linha):
     compri_linha = linha.projectAs(projecao_plana).length
     largura_app = 50
+    x_1_c = linha.firstPoint.X
+    y_1_c = linha.lasr
+    x_2_c = None
+    y_2_c = None
     circ_linha_1 = linha.projectAs(projecao_plana).buffer(largura_app).projectAs(projecao_geo)
 
 
