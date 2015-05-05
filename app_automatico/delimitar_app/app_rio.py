@@ -1,4 +1,5 @@
 import arcpy
+import func_app
 class AppRio():
     def __init__(self):
         self.diretorio_saida = None
@@ -21,6 +22,13 @@ class AppRio():
         del cursor_insert
     def analisar_linhas(self):
         for id_linha in self.dict_poligono_descricao["metadados"]["linhas"]:
-            pass
+            linha = self.dict_poligono_descricao["metadados"]["linhas"][id_linha]["linha_largura"]
+            id_frente = self.dict_poligono_descricao["metadados"]["linhas"][id_linha]["id_frente"]
+            linha_frente = self.dict_poligono_descricao["metadados"]["linhas"][id_frente]["linha_largura"]
+            func_app.criar_poligono_app(linha, linha_frente)
+    def registrar_variaveis_func_app(self):
+        func_app.projecao_plana = self.projecao_plana
+        func_app.projecao_geo = self.projecao_geo
     def iniciar_codigo(self):
+        self.registrar_variaveis_func_app()
         self.analisar_linhas()

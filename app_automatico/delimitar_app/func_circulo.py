@@ -1,5 +1,5 @@
 from math import sqrt, acos, sin, cos, pi, atan
-class PtCircBorda(object):
+class CircVetores(object):
     def __init__(self, x0, y0, pt1_x = None, pt1_y = None, pt2_x = None, pt2_y = None):
         self.x0 = x0; self.y0 = y0
         self.pt1_x = pt1_x; self.pt1_y = pt1_y; self.pt2_x = pt2_x; self.pt2_y = pt2_y
@@ -77,6 +77,15 @@ class PtCircBorda(object):
             "QIV"
             angulo = 2*pi - angulo
         return angulo
+
+    def retorna_ponto_de_angulo_inverso(self, ang_rad, raio):
+        ang_inverso = None
+        if ang_rad < pi:
+            ang_inverso = ang_rad + pi
+        else:
+            ang_inverso = ang_rad - pi
+        x , y = self.retorna_ponto_atraves_angulo(ang_inverso, raio)
+        return x, y
 
     def retorna_pontos_metade_entre_vetores(self, ponto1_x, ponto1_y, ponto2_x, ponto2_y, raio):
         angulo_pt1 = self.retorna_angulo_atraves_ponto(ponto1_x, ponto1_y)
