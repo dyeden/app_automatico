@@ -4,6 +4,7 @@ class AppRio():
     def __init__(self):
         self.diretorio_saida = None
         self.dict_poligono_descricao = None
+        self.dict_app_poligonos = {}
         self.projecao_plana = None
         self.projecao_geo = None
     def salvar_linhas(self):
@@ -20,15 +21,19 @@ class AppRio():
             cursor_insert.insertRow((n, linha_largura_poly, comprimento))
             n += 1
         del cursor_insert
+    def registrar_poligonos_app(self, poligono, id_linha, id_linha_frente):
+        self.dict_app_poligonos[id_linha] = poligono
     def analisar_linhas(self):
         for id_linha in self.dict_poligono_descricao["metadados"]["linhas"]:
             linha = self.dict_poligono_descricao["metadados"]["linhas"][id_linha]["linha_largura"]
             id_frente = self.dict_poligono_descricao["metadados"]["linhas"][id_linha]["id_frente"]
             linha_frente = self.dict_poligono_descricao["metadados"]["linhas"][id_frente]["linha_largura"]
-            func_app.criar_poligono_app(linha, linha_frente)
+            poligono = func_app.criar_poligono_app(linha, linha_frente)
+            self.registrar_poligonos_app(poligono, id_linha, id_frente)
     def registrar_variaveis_func_app(self):
         func_app.projecao_plana = self.projecao_plana
         func_app.projecao_geo = self.projecao_geo
     def iniciar_codigo(self):
         self.registrar_variaveis_func_app()
         self.analisar_linhas()
+        return self.dict_app_poligonos

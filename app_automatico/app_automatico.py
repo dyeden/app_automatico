@@ -13,6 +13,7 @@ class DefinirApp():
         self.diretorio_entrada = diretorio + "\ENTRADA\MASSA_DAGUA.shp"
         self.diretorio_saida = diretorio + "\SAIDA"
         self.dict_poligono_descricao = None
+        self.dict_app_poligonos  = None
         self.spatial_geo_sirgas_2000 = 'GEOGCS["GCS_SIRGAS_2000",DATUM["D_SIRGAS_2000",SPHEROID["GRS_1980",' \
                                        '6378137.0,298.257222101]],PRIMEM["Greenwich",0.0],' \
                                        'UNIT["Degree",0.0174532925199433]]'
@@ -41,11 +42,11 @@ class DefinirApp():
             obj_app_rio.dict_poligono_descricao = self.dict_poligono_descricao
             obj_app_rio.projecao_plana = self.spatial_proj_lambert
             obj_app_rio.projecao_geo = self.spatial_geo_sirgas_2000
-            obj_app_rio.iniciar_codigo()
+            return obj_app_rio.iniciar_codigo()
 
-    def salvar_dados(self):
-        pass
-
+    def salvar_dados(self, dict_app_poligonos, fid):
+        for id in dict_app_poligonos:
+            arcpy.CopyFeatures_management(dict_app_poligonos[id],self.diretorio_saida + "\APP_" + str(fid) + "_" + str(id))
     def main(self):
         if path.exists(self.diretorio_saida):
             rmtree(self.diretorio_saida)
@@ -55,7 +56,9 @@ class DefinirApp():
         mkdir(self.diretorio_saida + "/APP")
         with arcpy.da.SearchCursor(self.diretorio_entrada + "\MASSA_DAGUA.shp", ["OID@", "SHAPE@"], "FID = 19") as cursor:
             for row in cursor:
-                self.gerar_app(row[0], row[1].projectAs(self.spatial_geo_sirgas_2000), "MASSA_DAGUA")
+                dict_app_poligonos = self.gerar_app(row[0], row[1].projectAs(self.spatial_geo_sirgas_2000), "MASSA_DAGUA")
+                self.salvar_dados(dict_app_poligonos, row[0])
         del cursor
+
 if __name__ == '__main__':
     DefinirApp().main()
