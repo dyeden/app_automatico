@@ -1,4 +1,4 @@
-from arcpy import Polyline, Point, Array, PointGeometry
+from arcpy import Polygon, Polyline, Point, Array, PointGeometry
 from ponto_circ_borda import PtCircBorda
 projecao_plana = None
 projecao_geo = None
@@ -195,6 +195,16 @@ def calc_tipo_circ_borda(ponto, dict_poligono_descricao, dict_circ_desc):
         dict_circ_desc["linha_circulo"] = linha_circulo
     return dict_circ_desc
 
+def calc_poligono_ponta(linha_prox, linha_anterior):
+    poligono_ponta = None
+    linha_prox_buff = linha_prox.projectAs(projecao_plana).buffer(1).projectAs(projecao_geo)
+    poligono_ma_separado = poligono_ma.difference(linha_prox_buff)
+    if poligono_ma_separado.isMultipart:
+        for n in range(poligono_ma_separado.partCount):
+            parte = poligono_ma_separado.getPart(n)
+            poly_ma_parte = Polygon(parte, projecao_geo)
+            if not poly_ma_parte.disjoint(linha_anterior):
+                return poligono_ponta
 
 def controlador_pt_distancia(dict_poligono_descricao, dict_circ_desc):
     pass

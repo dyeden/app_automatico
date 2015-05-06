@@ -25,11 +25,14 @@ class AppRio():
         self.dict_app_poligonos[id_linha] = poligono
     def analisar_linhas(self):
         for id_linha in self.dict_poligono_descricao["metadados"]["linhas"]:
-            linha = self.dict_poligono_descricao["metadados"]["linhas"][id_linha]["linha_largura"]
-            id_frente = self.dict_poligono_descricao["metadados"]["linhas"][id_linha]["id_frente"]
-            linha_frente = self.dict_poligono_descricao["metadados"]["linhas"][id_frente]["linha_largura"]
-            poligono = func_app.criar_poligono_app(linha, linha_frente)
-            self.registrar_poligonos_app(poligono, id_linha, id_frente)
+            try:
+                linha = self.dict_poligono_descricao["metadados"]["linhas"][id_linha]["linha_largura"]
+                id_frente = self.dict_poligono_descricao["metadados"]["linhas"][id_linha]["id_frente"]
+                linha_frente = self.dict_poligono_descricao["metadados"]["linhas"][id_frente]["linha_largura"]
+                poligono = func_app.criar_poligono_app(linha, linha_frente)
+                self.registrar_poligonos_app(poligono, id_linha, id_frente)
+            except:
+                pass
     def registrar_variaveis_func_app(self):
         func_app.projecao_plana = self.projecao_plana
         func_app.projecao_geo = self.projecao_geo

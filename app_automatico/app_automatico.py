@@ -12,7 +12,7 @@ class DefinirApp():
         diretorio = path.dirname(path.dirname(path.dirname(argv[0])))
         self.diretorio_entrada = diretorio + "\ENTRADA\MASSA_DAGUA.shp"
         self.diretorio_saida = diretorio + "\SAIDA"
-        self.dict_poligono_descricao = None
+        self.dict_poligono_descricao = {}
         self.dict_app_poligonos  = None
         self.spatial_geo_sirgas_2000 = 'GEOGCS["GCS_SIRGAS_2000",DATUM["D_SIRGAS_2000",SPHEROID["GRS_1980",' \
                                        '6378137.0,298.257222101]],PRIMEM["Greenwich",0.0],' \
