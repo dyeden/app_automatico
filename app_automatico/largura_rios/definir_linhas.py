@@ -1,5 +1,7 @@
 import func_linhas
 import arcpy
+arcpy.env.outputMFlag = "Disabled"
+arcpy.env.outputZFlag = "Disabled"
 class DefinirLinhas():
     def __init__(self):
         self.poligono_ma = None
@@ -37,6 +39,7 @@ class DefinirLinhas():
 
         self.dict_circ_desc = {
             "tipo_circulo":None,
+            "subtipo":None,
             "circ_borda_geo":None,
             "partes":None,
             "pt_centro_circ":{"x_ptc":None,"y_ptc":None},
@@ -113,16 +116,20 @@ class DefinirLinhas():
             self.dict_poligono_descricao["metadados"]["bracos"][id_braco]["pt_ini_oposto"] = ponto_oposto
             self.dict_poligono_descricao["metadados"]["bracos"][id_braco]["distancia_oposta"] = distancia_oposta
         if id_linha > 0:
-            self.dict_poligono_descricao["metadados"]["linhas"][id_linha]["id_atras"] = id_linha - 1
-            self.dict_poligono_descricao["metadados"]["linhas"][id_linha - 1]["id_frente"] = id_linha
+            if self.dict_poligono_descricao["metadados"]["linhas"][id_linha - 1]["tipo"] == "extremidade":
+                #TODO implementar ponta e base por braco
+            else:
+                self.dict_poligono_descricao["metadados"]["linhas"][id_linha]["id_atras"] = id_linha - 1
+                self.dict_poligono_descricao["metadados"]["linhas"][id_linha - 1]["id_frente"] = id_linha
         if self.dict_circ_desc["tipo_circulo"] == "extremidade":
-            poligono_ponta = func_linhas.calc_poligono_ponta(
-                self.dict_poligono_descricao["metadados"]["linhas"][id_linha]["linha_largura"],
-                self.dict_poligono_descricao["metadados"]["linhas"][id_linha - 1]["linha_largura"]
-            )
-            self.dict_poligono_descricao["metadados"]["linhas"][id_linha]["poligono_ponta"] = poligono_ponta
+            if self.dict_circ_desc["subtipo"] == "ponta":
+                poligono_ponta = func_linhas.calc_poligono_ponta(
+                    self.dict_poligono_descricao["metadados"]["linhas"][id_linha - 1]["linha_largura"],
+                    self.dict_poligono_descricao["metadados"]["linhas"][id_linha - 2]["linha_largura"]
+                )
+                self.dict_poligono_descricao["metadados"]["linhas"][id_linha]["poligono_ponta"] = poligono_ponta
+                self.dict_poligono_descricao["metadados"]["linhas"][id_linha]["subtipo"] = "ponta"
             self.dict_poligono_descricao["metadados"]["bracos"][id_braco]["n_extremidades"] += 1
-            pass
 
     def montar_linhas(self):
         "montar linhas para rio"

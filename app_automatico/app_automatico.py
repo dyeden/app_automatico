@@ -10,7 +10,7 @@ arcpy.env.outputZFlag = "Disabled"
 class DefinirApp():
     def __init__(self):
         diretorio = path.dirname(path.dirname(path.dirname(argv[0])))
-        self.diretorio_entrada = diretorio + "\ENTRADA\MASSA_DAGUA.shp"
+        self.diretorio_entrada = diretorio + "\ENTRADA"
         self.diretorio_saida = diretorio + "\SAIDA"
         self.dict_poligono_descricao = {}
         self.dict_app_poligonos  = None
@@ -46,7 +46,7 @@ class DefinirApp():
 
     def salvar_dados(self, dict_app_poligonos, fid):
         for id in dict_app_poligonos:
-            arcpy.CopyFeatures_management(dict_app_poligonos[id],self.diretorio_saida + "\APP_" + str(fid) + "_" + str(id))
+            arcpy.CopyFeatures_management(dict_app_poligonos[id],self.diretorio_saida + "\APP\APP_" + str(fid) + "_" + str(id))
     def main(self):
         if path.exists(self.diretorio_saida):
             rmtree(self.diretorio_saida)
@@ -54,7 +54,7 @@ class DefinirApp():
         mkdir(self.diretorio_saida + "/LINHAS")
         mkdir(self.diretorio_saida + "/RESIDUOS")
         mkdir(self.diretorio_saida + "/APP")
-        with arcpy.da.SearchCursor(self.diretorio_entrada + "\MASSA_DAGUA.shp", ["OID@", "SHAPE@"], "FID = 19") as cursor:
+        with arcpy.da.SearchCursor(self.diretorio_entrada + "\MASSA_DAGUA_2.shp", ["OID@", "SHAPE@"], "FID = 19") as cursor:
             for row in cursor:
                 dict_app_poligonos = self.gerar_app(row[0], row[1].projectAs(self.spatial_geo_sirgas_2000), "MASSA_DAGUA")
                 self.salvar_dados(dict_app_poligonos, row[0])

@@ -1,5 +1,6 @@
 import arcpy
 import func_app
+
 class AppRio():
     def __init__(self):
         self.diretorio_saida = None

@@ -1,4 +1,6 @@
-from arcpy import Polygon, Polyline, Point, Array, PointGeometry
+from arcpy import Polygon, Polyline, Point, Array, PointGeometry, env
+env.outputMFlag = "Disabled"
+env.outputZFlag = "Disabled"
 from ponto_circ_borda import PtCircBorda
 projecao_plana = None
 projecao_geo = None
@@ -153,6 +155,7 @@ def calc_linhas_largura(dict_circ_desc, ponto):
 def circulo_de_borda_filtro(ponto, circ_borda, raio, dict_circ_desc, n_extremidades):
     """filtrar tipo de circulo"""
     tipo_circulo = dict_circ_desc["tipo_circulo"]
+    subtipo = None
     angulo_rad = None
     pontos_medios = None
     if dict_circ_desc["partes"]:
@@ -165,15 +168,20 @@ def circulo_de_borda_filtro(ponto, circ_borda, raio, dict_circ_desc, n_extremida
             raio += 10
     else:
         tipo_circulo = "extremidade"
+        subtipo = "ponta"
         angulo_rad = ponto_extremidade(dict_circ_desc)
 
-    return tipo_circulo, angulo_rad, raio, pontos_medios
+    return tipo_circulo, subtipo, angulo_rad, raio, pontos_medios
 
 
 def calc_tipo_circ_borda(ponto, dict_poligono_descricao, dict_circ_desc):
     """tipo de buffer"""
     x_ptc = ponto.getPart().X
     y_ptc = ponto.getPart().Y
+    dict_circ_desc["linha_largura"] = None
+    dict_circ_desc["linha_circulo"] = None
+    dict_circ_desc["tipo_circulo"] = None
+    dict_circ_desc["subtipo"] = None
     raio = dict_circ_desc["raio"]
     dict_circ_desc["pt_centro_circ"]["x_ptc"] = x_ptc
     dict_circ_desc["pt_centro_circ"]["y_ptc"] = y_ptc
@@ -182,7 +190,7 @@ def calc_tipo_circ_borda(ponto, dict_poligono_descricao, dict_circ_desc):
     dict_circ_desc["circ_borda_geo"] = circ_borda
     linha_buffer_inter = circ_borda.intersect(borda_linha_geo, 2)
     dict_circ_desc["partes"] =  funcao_multipart(linha_buffer_inter, ponto)
-    tipo_circulo, angulo_rad, raio, pontos_medios = \
+    tipo_circulo, subtipo, angulo_rad, raio, pontos_medios = \
         circulo_de_borda_filtro(ponto, circ_borda, raio, dict_circ_desc,
         dict_poligono_descricao["n_extremidades"])
     dict_circ_desc["tipo_circulo"] = tipo_circulo
@@ -193,18 +201,18 @@ def calc_tipo_circ_borda(ponto, dict_poligono_descricao, dict_circ_desc):
         linha_largura, linha_circulo = calc_linhas_largura(dict_circ_desc, ponto)
         dict_circ_desc["linha_largura"] = linha_largura
         dict_circ_desc["linha_circulo"] = linha_circulo
+    dict_circ_desc["subtipo"] = subtipo
     return dict_circ_desc
 
 def calc_poligono_ponta(linha_prox, linha_anterior):
-    poligono_ponta = None
     linha_prox_buff = linha_prox.projectAs(projecao_plana).buffer(1).projectAs(projecao_geo)
     poligono_ma_separado = poligono_ma.difference(linha_prox_buff)
     if poligono_ma_separado.isMultipart:
         for n in range(poligono_ma_separado.partCount):
             parte = poligono_ma_separado.getPart(n)
             poly_ma_parte = Polygon(parte, projecao_geo)
-            if not poly_ma_parte.disjoint(linha_anterior):
-                return poligono_ponta
+            if  poly_ma_parte.disjoint(linha_anterior):
+                return poly_ma_parte
 
 def controlador_pt_distancia(dict_poligono_descricao, dict_circ_desc):
     pass
