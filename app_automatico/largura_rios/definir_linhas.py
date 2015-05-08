@@ -103,6 +103,7 @@ class DefinirLinhas():
 
         if id_linha_braco == 0:
             self.dict_poligono_descricao["metadados"]["bracos"][id_braco] ={
+                     "id_linha_ini":None,
                      "pt_ini":None,
                      "pt_ini_oposto":None,
                      "n_extremidades":0,
@@ -111,13 +112,17 @@ class DefinirLinhas():
                      "distancia_oposta":None
                  }
             ponto_oposto = func_linhas.ponto_oposto(ponto, self.dict_circ_desc)
-            distancia_oposta = func_linhas.calc_distancia_oposta(self.dict_circ_desc, self.dict_lista_pontos[distancia+self.intervalo_entre_linhas])
+            distancia_oposta = func_linhas.calc_distancia_oposta( self.dict_circ_desc, self.dict_lista_pontos[distancia+self.intervalo_entre_linhas])
+            self.dict_poligono_descricao["metadados"]["bracos"][id_braco]["id_linha_ini"] = id_linha
             self.dict_poligono_descricao["metadados"]["bracos"][id_braco]["pt_ini"] = ponto
             self.dict_poligono_descricao["metadados"]["bracos"][id_braco]["pt_ini_oposto"] = ponto_oposto
             self.dict_poligono_descricao["metadados"]["bracos"][id_braco]["distancia_oposta"] = distancia_oposta
+
         if id_linha > 0:
             if self.dict_poligono_descricao["metadados"]["linhas"][id_linha - 1]["tipo"] == "extremidade":
-                #TODO implementar ponta e base por braco
+                if self.dict_poligono_descricao["metadados"]["linhas"][id_linha]["tipo"] == "meio":
+                    id_linha_ini = self.dict_poligono_descricao["metadados"]["bracos"][id_braco]["id_linha_ini"]
+                    self.dict_poligono_descricao["metadados"]["linhas"][id_linha_ini]["id_atras"] = id_linha
             else:
                 self.dict_poligono_descricao["metadados"]["linhas"][id_linha]["id_atras"] = id_linha - 1
                 self.dict_poligono_descricao["metadados"]["linhas"][id_linha - 1]["id_frente"] = id_linha

@@ -54,7 +54,7 @@ class DefinirApp():
         mkdir(self.diretorio_saida + "/LINHAS")
         mkdir(self.diretorio_saida + "/RESIDUOS")
         mkdir(self.diretorio_saida + "/APP")
-        with arcpy.da.SearchCursor(self.diretorio_entrada + "\MASSA_DAGUA_2.shp", ["OID@", "SHAPE@"], "FID = 19") as cursor:
+        with arcpy.da.SearchCursor(self.diretorio_entrada + "\MASSA_DAGUA.shp", ["OID@", "SHAPE@"], "FID = 19") as cursor:
             for row in cursor:
                 dict_app_poligonos = self.gerar_app(row[0], row[1].projectAs(self.spatial_geo_sirgas_2000), "MASSA_DAGUA")
                 self.salvar_dados(dict_app_poligonos, row[0])
