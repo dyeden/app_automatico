@@ -46,7 +46,7 @@ class DefinirApp():
 
     def salvar_dados(self, dict_app_poligonos, fid):
         for id in dict_app_poligonos:
-            arcpy.CopyFeatures_management(dict_app_poligonos[id],self.diretorio_saida + "\APP\APP_" + str(fid) + "_" + str(id))
+            arcpy.CopyFeatures_management(dict_app_poligonos[id]["poligono"],self.diretorio_saida + "\APP\APP_" + str(fid) + "_" + str(id))
     def main(self):
         if path.exists(self.diretorio_saida):
             rmtree(self.diretorio_saida)
