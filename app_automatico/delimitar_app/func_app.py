@@ -84,11 +84,8 @@ def criar_linha_largura_app(linha, largura_app):
     del array
     return linha_app
 
-def criar_poligono_app(linha, linha_frente):
-    linha_app = criar_linha_largura_app(linha, definir_largura_app(linha))
-    linha_app_frente =  criar_linha_largura_app(linha_frente, definir_largura_app(linha_frente))
+def criar_poligono_app(linha_app, linha_app_frente):
     array = Array()
-
     l1_firstX = linha_app.firstPoint.X
     l1_firstY = linha_app.firstPoint.Y
     l1_lastX = linha_app.lastPoint.X
@@ -97,12 +94,15 @@ def criar_poligono_app(linha, linha_frente):
     l2_firstY = linha_app_frente.firstPoint.Y
     l2_lastX = linha_app_frente.lastPoint.X
     l2_lastY = linha_app_frente.lastPoint.Y
+
     array.add(linha_app.firstPoint)
     array.add(linha_app.lastPoint)
-    array.add(linha_app_frente.lastPoint)
-
-
-    array.add(linha_app_frente.firstPoint)
+    if bool_interseccao_entre_linhas(((l1_lastX,l1_lastY),(l2_lastX,l2_lastY)),((l1_firstX,l1_firstY),(l2_firstX,l2_firstY))):
+        array.add(linha_app_frente.firstPoint)
+        array.add(linha_app_frente.lastPoint)
+    else:
+        array.add(linha_app_frente.lastPoint)
+        array.add(linha_app_frente.firstPoint)
     array.add(linha_app.firstPoint)
     polygon = Polygon(array, projecao_geo)
     array.removeAll()
