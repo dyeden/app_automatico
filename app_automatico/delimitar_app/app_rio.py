@@ -25,7 +25,7 @@ class AppRio():
             n += 1
         del cursor_insert
 
-    def registrar_poligonos_app(self, poligono, id_linha_1,id_linha_2):
+    def registrar_poligonos_app(self, poligono, id_linha_1, id_linha_2):
         self.dict_app_poligonos[self.id_poligono_app] = {
             "poligono":poligono,
             "id_linha_1":id_linha_1,
@@ -71,7 +71,7 @@ class AppRio():
                     if id_atras:
                         linha_atras = self.dict_poligono_descricao["metadados"]["linhas"][id_atras]["linha_largura"]
                         linha_app_atras = func_app.criar_linha_largura_app(linha_atras, self.largura_app(linha_atras))
-                        poligono = func_app.criar_poligono_app(linha_atras, linha_app_atras)
+                        poligono = func_app.criar_poligono_app(linha_app, linha_app_atras)
                         self.registrar_poligonos_app(poligono, id_linha, id_atras)
 
     def registrar_variaveis_func_app(self):
