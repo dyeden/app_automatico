@@ -46,8 +46,6 @@ class AppRio():
 
     def analisar_linhas(self):
         for id_linha in self.dict_poligono_descricao["metadados"]["linhas"]:
-            print id_linha
-
             linha = self.dict_poligono_descricao["metadados"]["linhas"][id_linha]["linha_largura"]
             id_frente = self.dict_poligono_descricao["metadados"]["linhas"][id_linha]["id_frente"]
             if linha:
