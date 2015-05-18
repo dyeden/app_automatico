@@ -45,8 +45,16 @@ class DefinirApp():
             return obj_app_rio.iniciar_codigo()
 
     def salvar_dados(self, dict_app_poligonos, fid):
+        diretorio_app = self.diretorio_saida + "\APP\APP_" + str(fid)
+
+        arcpy.CreateFeatureclass_management(self.diretorio_saida + "/APP", "APP_" + str(fid)  + ".shp", "POLYGON", "", "", "",
+                              self.spatial_geo_sirgas_2000)
+        cursor_insert = arcpy.da.InsertCursor(diretorio_app + ".shp", ['Id', 'SHAPE@'])
         for id in dict_app_poligonos:
-            arcpy.CopyFeatures_management(dict_app_poligonos[id]["poligono"],self.diretorio_saida + "\APP\APP_" + str(fid) + "_" + str(id))
+            cursor_insert.insertRow((id, dict_app_poligonos[id]["poligono"]))
+            # arcpy.CopyFeatures_management(dict_app_poligonos[id]["poligono"],self.diretorio_saida + "\APP\APP_" + str(fid) + "_" + str(id))
+        del cursor_insert
+
     def main(self):
         if path.exists(self.diretorio_saida):
             rmtree(self.diretorio_saida)
