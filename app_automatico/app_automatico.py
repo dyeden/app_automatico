@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import arcpy
+from tipo_poligono import TipoPoligono
 from largura_rios.definir_linhas import DefinirLinhas
 from delimitar_app.app_rio import AppRio
 from os import path, mkdir
@@ -29,6 +30,15 @@ class DefinirApp():
     def gerar_app(self, id, poligono_ma, tipo):
         "gerar app de acordo com o tipo de dado"
         if tipo == "MASSA_DAGUA":
+            tipo_ma = None
+            obj_tipo_poligono = TipoPoligono()
+            obj_tipo_poligono.poligono_ma = poligono_ma
+            obj_tipo_poligono.diretorio_saida = self.diretorio_saida
+            obj_tipo_poligono.projecao_plana = self.spatial_proj_lambert
+            obj_tipo_poligono.projecao_geo = self.spatial_geo_sirgas_2000
+            tipo_ma = obj_tipo_poligono.iniciar_codigo()
+
+
             obj_linhas = DefinirLinhas()
             obj_linhas.poligono_ma = poligono_ma
             obj_linhas.diretorio_saida = self.diretorio_saida
