@@ -5,8 +5,12 @@ class TipoPoligono():
         self.diretorio_saida = None
         self.projecao_plana = None
         self.projecao_geo = None
-    def analisar_lago(self):
-        if self.poligono
+    def analisar_lago(self, poligono):
+        x_max = poligono.extent.XMax
+        x_min = poligono.extent.XMin
+        y_max = poligono.extent.YMax
+        y_min = poligono.extent.YMin
+
     def analisar_poligono(self):
         tipo = None
         x_max = self.poligono_ma.extent.XMax
