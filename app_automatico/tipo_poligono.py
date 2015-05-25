@@ -10,6 +10,8 @@ class TipoPoligono():
         x_min = poligono.extent.XMin
         y_max = poligono.extent.YMax
         y_min = poligono.extent.YMin
+        x_centroid = poligono.centroid.X
+        y_centroid = poligono.centroid.Y
 
     def analisar_poligono(self):
         tipo = None
