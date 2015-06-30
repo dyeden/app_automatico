@@ -5,13 +5,35 @@ class TipoPoligono():
         self.diretorio_saida = None
         self.projecao_plana = None
         self.projecao_geo = None
-    def analisar_lago(self, poligono):
+
+    def analisar_lago(self, poligono, n_li = 10):
         x_max = poligono.extent.XMax
         x_min = poligono.extent.XMin
         y_max = poligono.extent.YMax
         y_min = poligono.extent.YMin
-        x_centroid = poligono.centroid.X
-        y_centroid = poligono.centroid.Y
+        x_cent = poligono.centroid.X
+        y_cent = poligono.centroid.Y
+        array = arcpy.Array()
+        array.add(arcpy.Point(x_min,y_min))
+        array.add(arcpy.Point(x_min,y_max))
+        array.add(arcpy.Point(x_max,y_max))
+        array.add(arcpy.Point(x_max,y_min))
+        array.add(arcpy.Point(x_min,y_min))
+        linha_envelope = arcpy.Polyline(array, self.projecao_geo)
+        del array
+        len_li_envelope = linha_envelope.length
+        n_inter = len_li_envelope/n_li
+        len_li = 0
+        while len_li <= len_li_envelope:
+            ponto_env = linha_envelope.positionAlongLine(len_li)
+            array = arcpy.Array()
+            #TODO ponto_env
+            array.add(ponto_env)
+            array.add(arcpy.Point(x_cent,y_cent))
+            linha_cent_env = arcpy.Polyline(array, self.projecao_geo)
+            del array
+            len_li += n_inter
+        pass
 
     def analisar_poligono(self):
         tipo = None
@@ -21,7 +43,7 @@ class TipoPoligono():
         y_min = self.poligono_ma.extent.YMin
         relacao_arestas = min(x_max-x_min, y_max-y_min)/max(x_max-x_min,y_max-y_min)
         if relacao_arestas > 0.8:
-            self.analisar_lago()
+            self.analisar_lago(self.poligono_ma)
         else:
             tipo = "rio"
         return tipo

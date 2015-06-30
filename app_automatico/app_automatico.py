@@ -8,7 +8,7 @@ from sys import argv
 from shutil import rmtree
 arcpy.env.outputMFlag = "Disabled"
 arcpy.env.outputZFlag = "Disabled"
-class DefinirApp():
+class DefinirApp:
     def __init__(self):
         diretorio = path.dirname(path.dirname(path.dirname(argv[0])))
         self.diretorio_entrada = diretorio + "\ENTRADA"
@@ -37,7 +37,7 @@ class DefinirApp():
             obj_tipo_poligono.projecao_plana = self.spatial_proj_lambert
             obj_tipo_poligono.projecao_geo = self.spatial_geo_sirgas_2000
             tipo_ma = obj_tipo_poligono.iniciar_codigo()
-
+            del obj_tipo_poligono
 
             obj_linhas = DefinirLinhas()
             obj_linhas.poligono_ma = poligono_ma
@@ -72,7 +72,7 @@ class DefinirApp():
         mkdir(self.diretorio_saida + "/LINHAS")
         mkdir(self.diretorio_saida + "/RESIDUOS")
         mkdir(self.diretorio_saida + "/APP")
-        with arcpy.da.SearchCursor(self.diretorio_entrada + "\MASSA_DAGUA.shp", ["OID@", "SHAPE@"], "FID = 19") as cursor:
+        with arcpy.da.SearchCursor(self.diretorio_entrada + "\MASSA_DAGUA.shp", ["OID@", "SHAPE@"], "FID = 205") as cursor:
             for row in cursor:
                 dict_app_poligonos = self.gerar_app(row[0], row[1].projectAs(self.spatial_geo_sirgas_2000), "MASSA_DAGUA")
                 self.salvar_dados(dict_app_poligonos, row[0])
