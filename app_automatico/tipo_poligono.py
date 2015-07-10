@@ -24,16 +24,18 @@ class TipoPoligono():
         len_li_envelope = linha_envelope.length
         n_inter = len_li_envelope/n_li
         len_li = 0
-        while len_li <= len_li_envelope:
+        while len_li < len_li_envelope:
             ponto_env = linha_envelope.positionAlongLine(len_li)
             array = arcpy.Array()
-            #TODO ponto_env
-            array.add(ponto_env)
+            array.add(arcpy.Point(ponto_env.firstPoint.X, ponto_env.firstPoint.Y))
             array.add(arcpy.Point(x_cent,y_cent))
             linha_cent_env = arcpy.Polyline(array, self.projecao_geo)
             del array
+            ponto_inter = linha_cent_env.intersect(poligono, 1)
+            if ponto_inter.partCount > 1:
+                return "rio"
             len_li += n_inter
-        pass
+        return "lago"
 
     def analisar_poligono(self):
         tipo = None
@@ -43,7 +45,7 @@ class TipoPoligono():
         y_min = self.poligono_ma.extent.YMin
         relacao_arestas = min(x_max-x_min, y_max-y_min)/max(x_max-x_min,y_max-y_min)
         if relacao_arestas > 0.8:
-            self.analisar_lago(self.poligono_ma)
+            tipo = self.analisar_lago(self.poligono_ma)
         else:
             tipo = "rio"
         return tipo
