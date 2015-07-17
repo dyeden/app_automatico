@@ -1,8 +1,10 @@
 import re
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-import ui_findandreplacedlg
-
+try:
+    import ui_findandreplacedlg
+except:
+    from app_automatico import ui_findandreplacedlg
 class FindAndReplaceDlg(QDialog, ui_findandreplacedlg.Ui_FindAndReplaceDlg):
     def __init__(self, text, parent=None):
         super(FindAndReplaceDlg, self).__init__(parent)

@@ -7,6 +7,12 @@ try:
 except ImportError:
     from distutils.core import setup
 
+try:
+    import py2exe
+except:
+    pass
+
+from app_automatico import telas
 
 with open('README.rst') as readme_file:
     readme = readme_file.read()
@@ -23,6 +29,17 @@ test_requirements = [
 ]
 
 setup(
+    windows=[{'script':'app_automatico/telas/findandreplacedlg.py'}, ],
+    # data_files = ['app_automatico/telas/testes/ui_findandreplacedlg.py'],
+    options={"py2exe":{
+                # 'packages':['app_automatico','telas'],
+
+                'bundle_files': 3,
+                'compressed': True,
+                "includes":["sip","PyQt4.QtGui", "app_automatico"],
+                "dll_excludes": ["MSVCP90.dll", "HID.DLL", "w9xpopen.exe"]
+                        }},
+
     name='app_automatico',
     version='0.1.0',
     description="Python Boilerplate contains all the boilerplate you need to create a Python package.",
@@ -39,6 +56,7 @@ setup(
     install_requires=requirements,
     license="BSD",
     zip_safe=False,
+    zipfile = None,
     keywords='app_automatico',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',

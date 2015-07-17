@@ -1,0 +1,2 @@
+import findandreplacedlg
+import ui_findandreplacedlg
