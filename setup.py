@@ -8,6 +8,11 @@ except ImportError:
     from distutils.core import setup
 
 try:
+    from setuptools import setup, find_packages
+except ImportError:
+    from distutils.core import setup, find_packages
+
+try:
     import py2exe
 except:
     pass
@@ -32,9 +37,9 @@ setup(
     windows=[{'script':'app_automatico/telas/findandreplacedlg.py'}, ],
     # data_files = ['app_automatico/telas/testes/ui_findandreplacedlg.py'],
     options={"py2exe":{
-                # 'packages':['app_automatico','telas'],
+                # 'packages':['app_automatico'],
 
-                'bundle_files': 3,
+                'bundle_files': 1,
                 'compressed': True,
                 "includes":["sip","PyQt4.QtGui", "app_automatico"],
                 "dll_excludes": ["MSVCP90.dll", "HID.DLL", "w9xpopen.exe"]
@@ -47,9 +52,7 @@ setup(
     author="Dyeden Monteiro",
     author_email='dyedenm@gmail.com',
     url='https://github.com/dyeden/app_automatico',
-    packages=[
-        'app_automatico',
-    ],
+    packages = find_packages(),
     package_dir={'app_automatico':
                  'app_automatico'},
     include_package_data=True,

@@ -2,7 +2,8 @@
 
 # Form implementation generated from reading ui file 'findandreplacedlg.ui'
 #
-# Created by: PyQt4 UI code generator 4.11.4
+# Created: Thu Jul 16 23:21:43 2015
+#      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -94,20 +95,6 @@ class Ui_FindAndReplaceDlg(object):
         self.closeButton.setObjectName(_fromUtf8("closeButton"))
         self.verticalLayout_2.addWidget(self.closeButton)
         self.horizontalLayout_3.addLayout(self.verticalLayout_2)
-        self.label.raise_()
-        self.findLineEdit.raise_()
-        self.label_2.raise_()
-        self.replaceLineEdit.raise_()
-        self.caseCheckBox.raise_()
-        self.wholeCheckBox.raise_()
-        self.label_3.raise_()
-        self.syntaxComboBox.raise_()
-        self.line.raise_()
-        self.findButton.raise_()
-        self.replaceButton.raise_()
-        self.replaceAllButton.raise_()
-        self.closeButton.raise_()
-        self.syntaxComboBox.raise_()
         self.label.setBuddy(self.findLineEdit)
         self.label_2.setBuddy(self.replaceLineEdit)
         self.label_3.setBuddy(self.syntaxComboBox)

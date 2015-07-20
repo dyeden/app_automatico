@@ -1,10 +1,11 @@
 import re
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-try:
-    import ui_findandreplacedlg
-except:
-    from app_automatico import ui_findandreplacedlg
+# try:
+#     import ui_findandreplacedlg
+# except:
+#     from app_automatico import ui_findandreplacedlg
+from app_automatico.telas import ui_findandreplacedlg
 class FindAndReplaceDlg(QDialog, ui_findandreplacedlg.Ui_FindAndReplaceDlg):
     def __init__(self, text, parent=None):
         super(FindAndReplaceDlg, self).__init__(parent)
@@ -50,6 +51,14 @@ class FindAndReplaceDlg(QDialog, ui_findandreplacedlg.Ui_FindAndReplaceDlg):
 
     @pyqtSignature("")
     def on_replaceButton_clicked(self):
+        dialog = QFileDialog(self)
+        dialog.setWindowTitle('Open File')
+        dialog.setNameFilter('Images (*.png *.xpm *.jpg)')
+        dialog.setFileMode(QFileDialog.ExistingFile)
+        if dialog.exec_() == QDialog.Accepted:
+            filename = dialog.selectedFiles()[0]
+        print filename
+        print dialog.selectedFiles()
         regex = self.makeRegex()
         self.__text = regex.sub(unicode(self.replaceLineEdit.text()),
         self.__text, 1)
