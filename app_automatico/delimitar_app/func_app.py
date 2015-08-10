@@ -107,5 +107,6 @@ def criar_poligono_app(linha_app, linha_app_frente):
     polygon = Polygon(array, projecao_geo)
     array.removeAll()
     del array
+    polygon = polygon.buffer(0.000000001)
     return polygon
 

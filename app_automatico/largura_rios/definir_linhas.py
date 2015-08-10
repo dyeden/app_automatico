@@ -1,4 +1,5 @@
 import func_linhas
+import func_retangulo
 import arcpy
 arcpy.env.outputMFlag = "Disabled"
 arcpy.env.outputZFlag = "Disabled"
@@ -97,8 +98,13 @@ class DefinirLinhas():
                 "distancia":distancia,
                 "tipo":self.dict_circ_desc["tipo_circulo"],
             }
+
+        if self.dict_circ_desc["tipo_circulo"] == "extremidade":
+            self.dict_poligono_descricao["metadados"]["bracos"][id_braco]["n_extremidades"] += 1
+
         if self.dict_poligono_descricao["metadados"]["bracos"][id_braco]["n_extremidades"] == 2:
             self.finalizar_linhas = True
+
 
 
         if id_linha_braco == 0:
@@ -134,7 +140,7 @@ class DefinirLinhas():
                 )
                 self.dict_poligono_descricao["metadados"]["linhas"][id_linha]["poligono_ponta"] = poligono_ponta
                 self.dict_poligono_descricao["metadados"]["linhas"][id_linha]["subtipo"] = "ponta"
-            self.dict_poligono_descricao["metadados"]["bracos"][id_braco]["n_extremidades"] += 1
+
 
     def montar_linhas(self):
         "montar linhas para rio"
@@ -167,6 +173,35 @@ class DefinirLinhas():
             id_linha += 1
             id_linha_braco += 1
             distancia += self.intervalo_entre_linhas
+
+    # def montar_linhas_retangular(self):
+    #
+    def direcionar_processo(self):
+        area_ma = self.poligono_ma.area
+        perimetro_ma = self.poligono_ma.length
+        frac_p = func_retangulo.dimensao_fractal(perimetro_ma, area_ma)
+        if frac_p < 1.12:
+            point_centroid = self.poligono_ma.centroid
+            delta = 0.087266462
+            rad_90 = 1.570796327
+            melhor_ang = func_retangulo.func_melhor_angulo(0,rad_90, delta, point_centroid,
+                                                           self.poligono_ma, self.projecao_geo)
+            inter_fim = melhor_ang + delta
+            inter_ini = melhor_ang - delta
+            delta2 = delta/10
+            melhor_ang = func_retangulo.func_melhor_angulo(inter_ini, inter_fim, delta2, point_centroid,
+                                                           self.poligono_ma, self.projecao_geo)
+            poly_rot = func_retangulo.rotacionar_poligono(self.poligono_ma, point_centroid, melhor_ang, self.projecao_geo)
+            retangulo = func_retangulo.ret_envolvente(poly_rot, self.projecao_geo)
+            ret_rot = func_retangulo.rotacionar_poligono(retangulo, point_centroid, - melhor_ang, self.projecao_geo)
+            area_ret_rot = ret_rot.projectAs(self.projecao_plana).area
+            ret_p = area_ma/area_ret_rot
+            if ret_p > 0.6:
+
+            else:
+                return "circulo"
+        else:
+            return "circulo"
 
 
     def registrar_variaveis_func_linhas(self):

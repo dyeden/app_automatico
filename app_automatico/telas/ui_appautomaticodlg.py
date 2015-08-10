@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'appautomaticodlg.ui'
 #
-# Created: Mon Jul 20 10:44:49 2015
+# Created: Sat Jul 25 17:48:22 2015
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,7 +26,7 @@ except AttributeError:
 class Ui_AppAutomaticoDlg(object):
     def setupUi(self, AppAutomaticoDlg):
         AppAutomaticoDlg.setObjectName(_fromUtf8("AppAutomaticoDlg"))
-        AppAutomaticoDlg.resize(357, 136)
+        AppAutomaticoDlg.resize(609, 325)
         self.horizontalLayout = QtGui.QHBoxLayout(AppAutomaticoDlg)
         self.horizontalLayout.setSizeConstraint(QtGui.QLayout.SetFixedSize)
         self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
@@ -57,7 +57,13 @@ class Ui_AppAutomaticoDlg(object):
         self.aprtButton.setObjectName(_fromUtf8("aprtButton"))
         self.gridLayout.addWidget(self.aprtButton, 3, 2, 1, 1)
         spacerItem = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
-        self.gridLayout.addItem(spacerItem, 4, 1, 1, 1)
+        self.gridLayout.addItem(spacerItem, 5, 1, 1, 1)
+        self.saiButton = QtGui.QPushButton(AppAutomaticoDlg)
+        self.saiButton.setObjectName(_fromUtf8("saiButton"))
+        self.gridLayout.addWidget(self.saiButton, 4, 2, 1, 1)
+        self.label_5 = QtGui.QLabel(AppAutomaticoDlg)
+        self.label_5.setObjectName(_fromUtf8("label_5"))
+        self.gridLayout.addWidget(self.label_5, 4, 0, 1, 1)
         self.horizontalLayout.addLayout(self.gridLayout)
         self.line = QtGui.QFrame(AppAutomaticoDlg)
         self.line.setFrameShape(QtGui.QFrame.VLine)
@@ -67,14 +73,14 @@ class Ui_AppAutomaticoDlg(object):
         self.gridLayout_2 = QtGui.QGridLayout()
         self.gridLayout_2.setSizeConstraint(QtGui.QLayout.SetDefaultConstraint)
         self.gridLayout_2.setObjectName(_fromUtf8("gridLayout_2"))
-        self.iniButton = QtGui.QPushButton(AppAutomaticoDlg)
-        self.iniButton.setObjectName(_fromUtf8("iniButton"))
-        self.gridLayout_2.addWidget(self.iniButton, 0, 0, 1, 1)
-        spacerItem1 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
-        self.gridLayout_2.addItem(spacerItem1, 1, 0, 1, 1)
         self.closeButton = QtGui.QPushButton(AppAutomaticoDlg)
         self.closeButton.setObjectName(_fromUtf8("closeButton"))
         self.gridLayout_2.addWidget(self.closeButton, 2, 0, 1, 1)
+        spacerItem1 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.gridLayout_2.addItem(spacerItem1, 1, 0, 1, 1)
+        self.iniButton = QtGui.QPushButton(AppAutomaticoDlg)
+        self.iniButton.setObjectName(_fromUtf8("iniButton"))
+        self.gridLayout_2.addWidget(self.iniButton, 0, 0, 1, 1)
         self.horizontalLayout.addLayout(self.gridLayout_2)
         self.label_3.setBuddy(self.maButton)
         self.label.setBuddy(self.dreButton)
@@ -95,6 +101,8 @@ class Ui_AppAutomaticoDlg(object):
         self.ptButton.setText(_translate("AppAutomaticoDlg", "Adicionar", None))
         self.label_4.setText(_translate("AppAutomaticoDlg", "Limite da Propriedade", None))
         self.aprtButton.setText(_translate("AppAutomaticoDlg", "Adicionar", None))
-        self.iniButton.setText(_translate("AppAutomaticoDlg", "Iniciar Processo", None))
+        self.saiButton.setText(_translate("AppAutomaticoDlg", "Saída", None))
+        self.label_5.setText(_translate("AppAutomaticoDlg", "Local de saída de dados", None))
         self.closeButton.setText(_translate("AppAutomaticoDlg", "Fechar", None))
+        self.iniButton.setText(_translate("AppAutomaticoDlg", "Iniciar Processo", None))
 

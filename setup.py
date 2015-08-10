@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+import numpy
 
 try:
     from setuptools import setup
@@ -34,7 +34,7 @@ test_requirements = [
 ]
 
 setup(
-    windows=[{'script':'app_automatico/telas/findandreplacedlg.py'}, ],
+    windows=[{'script':'app_automatico/telas/appautomaticodlg.py'}, ],
     # data_files = ['app_automatico/telas/testes/ui_findandreplacedlg.py'],
     options={"py2exe":{
                 # 'packages':['app_automatico'],
