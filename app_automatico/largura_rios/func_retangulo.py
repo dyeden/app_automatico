@@ -1,4 +1,4 @@
-from arcpy import da, Array, Point, Polygon, AddField_management, CreateFeatureclass_management
+from arcpy import da, Array, Point, Polyline, Polygon, AddField_management, CreateFeatureclass_management
 import math
 
 
@@ -31,9 +31,33 @@ def ret_envolvente(polygon, proj_geo):
     return result_polygon
 
 def bases_larguras(polygon):
+    array1 = Array()
+    array2 = Array()
+    array3 = Array()
+    array4 = Array()
     for part in polygon:
         point1 = part[0]
         point2 = part[1]
+        point3 = part[2]
+        point4 = part[3]
+    array1.add(point1); array1.add(point2)
+    array2.add(point2); array2.add(point3)
+    array3.add(point3); array3.add(point4)
+    array4.add(point4); array4.add(point1)
+    li1 = Polyline(array1)
+    li2 = Polyline(array2)
+    li3 = Polyline(array3)
+    li4 = Polyline(array4)
+    if li1.length > li2.length:
+        lista_base = [li1, li3]
+        lista_largura = [li2, li4]
+    else:
+        lista_base = [li2, li4]
+        lista_largura = [li1, li3]
+    return lista_base, lista_largura
+
+
+    
 
 def func_melhor_angulo(inter_ini, inter_fim, delta, point_centr, poly, projecao_geo):
     angulo = inter_ini

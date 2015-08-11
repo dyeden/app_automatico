@@ -174,12 +174,23 @@ class DefinirLinhas():
             id_linha_braco += 1
             distancia += self.intervalo_entre_linhas
 
-    # def montar_linhas_retangular(self):
-    #
+    def montar_linhas_retangular(self, li_ret_base, li_ret_largura):
+        lin_base_plana_1 = li_ret_base[0].projectAs(self.projecao_plana)
+        lin_base_plana_2 = li_ret_base[1].projectAs(self.projecao_plana)
+        compri_total = lin_base_plana_1.length
+        distancia = 0
+
+        while distancia < compri_total:
+            print distancia
+            distancia += self.intervalo_entre_linhas
+
+
     def direcionar_processo(self):
         area_ma = self.poligono_ma.area
         perimetro_ma = self.poligono_ma.length
         frac_p = func_retangulo.dimensao_fractal(perimetro_ma, area_ma)
+        li_ret_largura = None
+        li_ret_base = None
         if frac_p < 1.12:
             point_centroid = self.poligono_ma.centroid
             delta = 0.087266462
@@ -197,11 +208,16 @@ class DefinirLinhas():
             area_ret_rot = ret_rot.projectAs(self.projecao_plana).area
             ret_p = area_ma/area_ret_rot
             if ret_p > 0.6:
-
+                li_ret_base, li_ret_largura = func_retangulo.bases_larguras(self.poligono_ma)
+                if li_ret_largura[0].length/li_ret_base[0].length > 0.3:
+                    tipo = "retangulo"
+                else:
+                    tipo = "circulo"
+                return tipo, li_ret_base, li_ret_largura
             else:
-                return "circulo"
+                return "circulo", li_ret_base, li_ret_largura
         else:
-            return "circulo"
+            return "circulo", li_ret_base, li_ret_largura
 
 
     def registrar_variaveis_func_linhas(self):
@@ -216,6 +232,11 @@ class DefinirLinhas():
         self.registrar_variaveis_func_linhas()
         self.tipo_poligono()
         if self.dict_poligono_descricao["tipo"] == "rio":
-            self.dissecar_poligono()
-            self.montar_linhas()
+            tipo, li_ret_base, li_ret_largura = self.direcionar_processo()
+            if tipo == "circulo":
+                self.dissecar_poligono()
+                self.montar_linhas()
+            elif tipo == "retangulo":
+                self.montar_linhas_retangular(li_ret_base, li_ret_largura)
+
         return self.dict_poligono_descricao
