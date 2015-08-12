@@ -178,10 +178,13 @@ class DefinirLinhas():
         lin_base_plana_1 = li_ret_base[0].projectAs(self.projecao_plana)
         lin_base_plana_2 = li_ret_base[1].projectAs(self.projecao_plana)
         compri_total = lin_base_plana_1.length
-        distancia = 0
-
+        distancia = self.intervalo_entre_linhas
         while distancia < compri_total:
-            print distancia
+            linha_largura = None
+            linha_ret = func_retangulo.calc_linha_ret(lin_base_plana_1, lin_base_plana_2, distancia, self.projecao_geo, self.projecao_geo)
+            if not linha_ret.disjoint(self.poligono_ma):
+                linha_largura = linha_ret.intersect(self.poligono_ma, 2)
+
             distancia += self.intervalo_entre_linhas
 
 
@@ -205,10 +208,10 @@ class DefinirLinhas():
             poly_rot = func_retangulo.rotacionar_poligono(self.poligono_ma, point_centroid, melhor_ang, self.projecao_geo)
             retangulo = func_retangulo.ret_envolvente(poly_rot, self.projecao_geo)
             ret_rot = func_retangulo.rotacionar_poligono(retangulo, point_centroid, - melhor_ang, self.projecao_geo)
-            area_ret_rot = ret_rot.projectAs(self.projecao_plana).area
+            area_ret_rot = ret_rot.area
             ret_p = area_ma/area_ret_rot
             if ret_p > 0.6:
-                li_ret_base, li_ret_largura = func_retangulo.bases_larguras(self.poligono_ma)
+                li_ret_base, li_ret_largura = func_retangulo.bases_larguras(ret_rot, self.projecao_geo)
                 if li_ret_largura[0].length/li_ret_base[0].length > 0.3:
                     tipo = "retangulo"
                 else:

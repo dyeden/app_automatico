@@ -30,11 +30,28 @@ def ret_envolvente(polygon, proj_geo):
     del array
     return result_polygon
 
-def bases_larguras(polygon):
+def calc_linha_ret(li_pla1, li_pla2, distancia, proj_geo, proj_plana):
+    array = Array()
+    ponto1 = li_pla1.positionAlongLine(distancia).projectAs(proj_geo)
+    ponto2 = li_pla2.positionAlongLine(distancia).projectAs(proj_geo)
+    pt_label1 = ponto1.labelPoint
+    pt_label2 = ponto2.labelPoint
+    array.add(pt_label1)
+    array.add(pt_label2)
+    linha_ret = Polyline(array, proj_geo)
+    del array
+    return linha_ret
+
+def bases_larguras(polygon, proj_geo):
     array1 = Array()
     array2 = Array()
     array3 = Array()
     array4 = Array()
+    point1 = None
+    point2 = None
+    point3 = None
+    point4 = None
+
     for part in polygon:
         point1 = part[0]
         point2 = part[1]
@@ -42,22 +59,23 @@ def bases_larguras(polygon):
         point4 = part[3]
     array1.add(point1); array1.add(point2)
     array2.add(point2); array2.add(point3)
-    array3.add(point3); array3.add(point4)
-    array4.add(point4); array4.add(point1)
-    li1 = Polyline(array1)
-    li2 = Polyline(array2)
-    li3 = Polyline(array3)
-    li4 = Polyline(array4)
+    array3.add(point4); array3.add(point3)
+    array4.add(point1); array4.add(point4)
+    li1 = Polyline(array1, proj_geo)
+    li2 = Polyline(array2, proj_geo)
+    li3 = Polyline(array3, proj_geo)
+    li4 = Polyline(array4, proj_geo)
     if li1.length > li2.length:
         lista_base = [li1, li3]
         lista_largura = [li2, li4]
     else:
         lista_base = [li2, li4]
         lista_largura = [li1, li3]
+    del array1
+    del array2
+    del array3
+    del array4
     return lista_base, lista_largura
-
-
-    
 
 def func_melhor_angulo(inter_ini, inter_fim, delta, point_centr, poly, projecao_geo):
     angulo = inter_ini
