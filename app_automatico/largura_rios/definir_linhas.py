@@ -179,11 +179,28 @@ class DefinirLinhas():
         lin_base_plana_2 = li_ret_base[1].projectAs(self.projecao_plana)
         compri_total = lin_base_plana_1.length
         distancia = self.intervalo_entre_linhas
+
+        self.dict_poligono_descricao["metadados"]["bracos"][0] ={
+                 "id_linha_ini":None,
+                 "n_extremidades":2,
+                 "ponta":None,
+                 "base":None,
+             }
+        id_linha = 0
         while distancia < compri_total:
-            linha_largura = None
             linha_ret = func_retangulo.calc_linha_ret(lin_base_plana_1, lin_base_plana_2, distancia, self.projecao_geo, self.projecao_geo)
             if not linha_ret.disjoint(self.poligono_ma):
                 linha_largura = linha_ret.intersect(self.poligono_ma, 2)
+                if id_linha == 0:
+                    self.dict_poligono_descricao["metadados"]["linhas"][id_linha - 1]["tipo"] == "extremidade":
+
+
+
+
+
+
+                id_linha += 1
+
 
             distancia += self.intervalo_entre_linhas
 
