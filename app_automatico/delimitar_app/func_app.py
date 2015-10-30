@@ -7,16 +7,7 @@ borda_linha_plana = None
 from func_circulo import CircVetores
 from arcpy import Point, PointGeometry, Polyline, Polygon, Array
 import numpy
-def definir_largura_app(linha):
-    compri_linha = linha.projectAs(projecao_plana).length
-    compri_app = None
-    if compri_linha < 10:
-        compri_app = 30
-    elif compri_app <= 10 and compri_app < 50:
-        compri_app = 50
-    elif compri_app <= 50 and compri_app < 200:
-        compri_app = 100
-    return compri_app
+
 
 def bool_interseccao_entre_linhas(line1, line2):
     xdiff = (line1[0][0] - line1[1][0], line2[0][0] - line2[1][0])

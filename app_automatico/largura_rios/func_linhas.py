@@ -25,15 +25,15 @@ def funcao_multipart(linha, ponto):
     return dict_partes
 
 
-def pontos_aolongo_linha():
+def pontos_aolongo_linha(intervalo = 10):
     dict_lista_pontos = {}
     compri_total = borda_linha_plana.length
     compri_atual = 0
     while compri_atual < compri_total:
         ponto = borda_linha_plana.positionAlongLine(compri_atual).projectAs(projecao_geo)
         dict_lista_pontos[compri_atual] = ponto
-        compri_atual += 10
-        dict_lista_pontos["compri_total"] = compri_total
+        compri_atual += intervalo
+    dict_lista_pontos["compri_total"] = compri_total
     return dict_lista_pontos
 
 

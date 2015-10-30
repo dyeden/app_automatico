@@ -5,6 +5,7 @@ arcpy.env.outputMFlag = "Disabled"
 arcpy.env.outputZFlag = "Disabled"
 class DefinirLinhas():
     def __init__(self):
+        self.fid = None
         self.poligono_ma = None
         self.diretorio_saida = None
         self.dict_poligono_descricao =   {
@@ -99,14 +100,15 @@ class DefinirLinhas():
                 "tipo":self.dict_circ_desc["tipo_circulo"],
             }
 
+######################################################################################################################
+        "identificar quantas extremidades em um mesmo ramo ja foram passadas"
         if self.dict_circ_desc["tipo_circulo"] == "extremidade":
             self.dict_poligono_descricao["metadados"]["bracos"][id_braco]["n_extremidades"] += 1
 
         if self.dict_poligono_descricao["metadados"]["bracos"][id_braco]["n_extremidades"] == 2:
             self.finalizar_linhas = True
-
-
-
+#######################################################################################################################
+        "defini os dados iniciais do primeiro ponto a ser lido"
         if id_linha_braco == 0:
             self.dict_poligono_descricao["metadados"]["bracos"][id_braco] ={
                      "id_linha_ini":None,
@@ -132,6 +134,9 @@ class DefinirLinhas():
             else:
                 self.dict_poligono_descricao["metadados"]["linhas"][id_linha]["id_atras"] = id_linha - 1
                 self.dict_poligono_descricao["metadados"]["linhas"][id_linha - 1]["id_frente"] = id_linha
+
+###########################################################################################################
+        "calcula a ponta do poligono se esse vier como extremidade"
         if self.dict_circ_desc["tipo_circulo"] == "extremidade":
             if self.dict_circ_desc["subtipo"] == "ponta":
                 poligono_ponta = func_linhas.calc_poligono_ponta(
@@ -140,7 +145,7 @@ class DefinirLinhas():
                 )
                 self.dict_poligono_descricao["metadados"]["linhas"][id_linha]["poligono_ponta"] = poligono_ponta
                 self.dict_poligono_descricao["metadados"]["linhas"][id_linha]["subtipo"] = "ponta"
-
+###########################################################################################################
 
     def montar_linhas(self):
         "montar linhas para rio"
@@ -151,9 +156,6 @@ class DefinirLinhas():
         compri_total = self.dict_lista_pontos["compri_total"]
         while distancia < compri_total:
             ponto = self.dict_lista_pontos[distancia]
-
-            print distancia
-
             validar_circulo = False
             self.dict_circ_desc["loop_validar"] = 0
             self.dict_circ_desc["distancia_pt_inicio"] = distancia
@@ -178,7 +180,7 @@ class DefinirLinhas():
         lin_base_plana_1 = li_ret_base[0].projectAs(self.projecao_plana)
         lin_base_plana_2 = li_ret_base[1].projectAs(self.projecao_plana)
         compri_total = lin_base_plana_1.length
-        distancia = self.intervalo_entre_linhas
+        distancia = 0
 
         self.dict_poligono_descricao["metadados"]["bracos"][0] ={
                  "id_linha_ini":None,
@@ -187,30 +189,91 @@ class DefinirLinhas():
                  "base":None,
              }
         id_linha = 0
+        id_li_extrem_ini = None
+        id_li_extrem_fim = None
         while distancia < compri_total:
-            linha_ret = func_retangulo.calc_linha_ret(lin_base_plana_1, lin_base_plana_2, distancia, self.projecao_geo, self.projecao_geo)
-            if not linha_ret.disjoint(self.poligono_ma):
-                linha_largura = linha_ret.intersect(self.poligono_ma, 2)
-                if id_linha == 0:
-                    self.dict_poligono_descricao["metadados"]["linhas"][id_linha - 1]["tipo"] == "extremidade":
+            self.dict_poligono_descricao["metadados"]["linhas"][id_linha] = {
+                "id_linha_braco":id_linha,
+                "id_frente":1,
+                "id_atras":None,
+                "linha_largura":None,
+                "linha_app":None,
+                "braco":None,
+                "distancia":distancia,
+                "tipo":None,
+            }
 
+            if compri_total - distancia < self.intervalo_entre_linhas:
+                "determina a extremidade final"
+                id_li_extrem_fim = id_linha
+                self.dict_poligono_descricao["metadados"]["linhas"][id_linha]["tipo"] = "extremidade"
+                self.dict_poligono_descricao["metadados"]["linhas"][id_linha]["subtipo"] = 'ponta'
 
+            elif id_linha > 0:
+                linha_ret = func_retangulo.calc_linha_ret(lin_base_plana_1, lin_base_plana_2, distancia, self.projecao_geo, self.projecao_geo)
+                if not linha_ret.disjoint(self.poligono_ma):
+                    linha_largura = linha_ret.intersect(self.poligono_ma, 2)
+                    self.dict_poligono_descricao["metadados"]["linhas"][id_linha]["linha_largura"] = linha_largura
+                    self.dict_poligono_descricao["metadados"]["linhas"][id_linha]["tipo"] = "meio"
+                    self.dict_poligono_descricao["metadados"]["linhas"][id_linha]["id_atras"] = id_linha - 1
+                    self.dict_poligono_descricao["metadados"]["linhas"][id_linha]["id_frente"] = id_linha + 1
 
+                else:
+                    distancia += self.intervalo_entre_linhas
+                    continue
+                if id_linha == 1:
+                    id_li_extrem_ini = id_linha - 1
+                    "determina o poligono da ponta final"
+                    self.dict_poligono_descricao["metadados"]["linhas"][id_linha - 1]["tipo"] = "extremidade"
+                    self.dict_poligono_descricao["metadados"]["linhas"][id_linha - 1]["subtipo"] = 'ponta'
 
-
-
-                id_linha += 1
-
-
+            id_linha += 1
             distancia += self.intervalo_entre_linhas
 
+        #poligono ponta inicial
+        poligono_ponta = func_linhas.calc_poligono_ponta(
+            self.dict_poligono_descricao["metadados"]["linhas"][id_li_extrem_ini + 1]["linha_largura"],
+            self.dict_poligono_descricao["metadados"]["linhas"][id_li_extrem_ini + 2]["linha_largura"]
+        )
+        self.dict_poligono_descricao["metadados"]["linhas"][id_li_extrem_ini]["poligono_ponta"] = poligono_ponta
+
+        #poligono ponta final
+        poligono_ponta = func_linhas.calc_poligono_ponta(
+            self.dict_poligono_descricao["metadados"]["linhas"][id_li_extrem_fim - 1]["linha_largura"],
+            self.dict_poligono_descricao["metadados"]["linhas"][id_li_extrem_fim - 2]["linha_largura"]
+        )
+        self.dict_poligono_descricao["metadados"]["linhas"][id_li_extrem_fim]["poligono_ponta"] = poligono_ponta
+
+    def montar_linhas_voronoi(self):
+        #recolocar os pontos por intervalo
+        import func_voronoi
+        array = arcpy.Array()
+        intervalo = 10
+        distancia = 0
+        compri_total = self.dict_lista_pontos["compri_total"]
+
+        lista_pontos_voronoi = []
+        while distancia < compri_total:
+            ponto = self.dict_lista_pontos[distancia]
+            array.add(ponto.labelPoint)
+            lista_pontos_voronoi.append([ponto.labelPoint.X, ponto.labelPoint.Y])
+            distancia += intervalo
+        multiPoint = arcpy.Multipoint(array)
+        del array
+
+
+        linha_voronoi = func_voronoi.voronoi_pontos(lista_pontos_voronoi,  self.poligono_ma,
+                                                    self.poligono_ma.boundary(), self.projecao_geo, self.diretorio_saida, self.fid)
+
+        linha_voronoi_limpa = func_voronoi.limpar_linha(linha_voronoi, self.projecao_geo, self.projecao_plana)
+        pass
 
     def direcionar_processo(self):
-        area_ma = self.poligono_ma.area
-        perimetro_ma = self.poligono_ma.length
+        poligono_projetado = self.poligono_ma.projectAs(self.projecao_plana)
+        area_ma = poligono_projetado.area
+        perimetro_ma = poligono_projetado.length
         frac_p = func_retangulo.dimensao_fractal(perimetro_ma, area_ma)
-        li_ret_largura = None
-        li_ret_base = None
+        tipo, li_ret_base, li_ret_largura = None, None, None
         if frac_p < 1.12:
             point_centroid = self.poligono_ma.centroid
             delta = 0.087266462
@@ -235,7 +298,9 @@ class DefinirLinhas():
                     tipo = "circulo"
                 return tipo, li_ret_base, li_ret_largura
             else:
-                return "circulo", li_ret_base, li_ret_largura
+                return "curvo", li_ret_base, li_ret_largura
+        elif frac_p < 1.21:
+            return "curvo", li_ret_base, li_ret_largura
         else:
             return "circulo", li_ret_base, li_ret_largura
 
@@ -253,10 +318,14 @@ class DefinirLinhas():
         self.tipo_poligono()
         if self.dict_poligono_descricao["tipo"] == "rio":
             tipo, li_ret_base, li_ret_largura = self.direcionar_processo()
+            tipo = "curvo"
             if tipo == "circulo":
                 self.dissecar_poligono()
                 self.montar_linhas()
             elif tipo == "retangulo":
                 self.montar_linhas_retangular(li_ret_base, li_ret_largura)
+            elif tipo == "curvo":
+                self.dissecar_poligono()
+                self.montar_linhas_voronoi()
 
         return self.dict_poligono_descricao

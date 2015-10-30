@@ -33,7 +33,7 @@ class DefinirApp:
                                     'PARAMETER["Standard_Parallel_2",-6.833333333333333],PARAMETER' \
                                     '["Latitude_Of_Origin",-3.666667],UNIT["Meter",1.0]]'
 
-    def gerar_app(self, id, poligono_ma, tipo):
+    def gerar_app(self, fid, poligono_ma, tipo):
         "gerar app de acordo com o tipo de dado"
         if tipo == "MASSA_DAGUA":
             tipo_ma = None
@@ -46,6 +46,7 @@ class DefinirApp:
             del obj_tipo_poligono
 
             obj_linhas = DefinirLinhas()
+            obj_linhas.fid = fid
             obj_linhas.poligono_ma = poligono_ma
             obj_linhas.diretorio_saida = self.diretorio_saida
             obj_linhas.projecao_plana = self.projecao_plana
@@ -96,7 +97,6 @@ class DefinirApp:
                 cursor_insert_app.insertRow((id_linha, linha_app, comprimento))
             id_linha += 1
 
-
         del cursor_insert_li
         del cursor_insert_app
 
@@ -105,7 +105,7 @@ class DefinirApp:
         if self.__maPath:
             dir_ma_shp = self.__maPath
         else:
-            dir_ma_shp = self.diretorio_entrada + "\MASSA_DAGUA.shp"
+            dir_ma_shp = self.diretorio_entrada + "\MASSA_DAGUA_2.shp"
         if path.exists(self.diretorio_saida):
             rmtree(self.diretorio_saida)
         mkdir(self.diretorio_saida)
@@ -113,7 +113,7 @@ class DefinirApp:
         mkdir(self.diretorio_saida + "/RESIDUOS")
         mkdir(self.diretorio_saida + "/APP")
 
-        with arcpy.da.SearchCursor(dir_ma_shp, ["OID@", "SHAPE@"]) as cursor:
+        with arcpy.da.SearchCursor(dir_ma_shp, ["OID@", "SHAPE@"], "FID = 19") as cursor:
             for row in cursor:
                 print "fid: ", row[0]
                 dict_app_poligonos, self.dict_poligono_descricao = self.gerar_app(row[0], row[1].projectAs(self.projecao_geo), "MASSA_DAGUA")

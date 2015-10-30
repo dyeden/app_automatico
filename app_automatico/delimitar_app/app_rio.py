@@ -31,6 +31,7 @@ class AppRio():
 
     def analisar_linhas(self):
         for id_linha in self.dict_poligono_descricao["metadados"]["linhas"]:
+            "para cada linha de largura do rio e criada uma linha de app"
             linha = self.dict_poligono_descricao["metadados"]["linhas"][id_linha]["linha_largura"]
             if linha:
                 linha_app = func_app.criar_linha_largura_app(linha, self.largura_app(linha))
@@ -42,17 +43,22 @@ class AppRio():
 
             if linha == None or id_frente == None:
                 if self.dict_poligono_descricao["metadados"]["linhas"][id_linha]["tipo"] == 'extremidade':
+                    "determina uma app para as extremidades"
+
                     if self.dict_poligono_descricao["metadados"]["linhas"][id_linha]["subtipo"] == 'ponta':
-                        pass
+                        id_atras = self.dict_poligono_descricao["metadados"]["linhas"][id_linha]["id_atras"]
+                        poligono_ponta = self.dict_poligono_descricao["metadados"]["linhas"][id_linha]['poligono_ponta']
+                        poligono = poligono_ponta.projectAs(self.projecao_plana).buffer(30).projectAs(self.projecao_geo)
+                        self.registrar_poligonos_app(poligono, id_linha, id_atras)
 
             elif self.dict_poligono_descricao["metadados"]["linhas"][id_frente]["linha_largura"] == None:
                 pass
 
             else:
+                "cria a app usando as linhas de app"
                 linha_app = self.dict_poligono_descricao["metadados"]["linhas"][id_linha]["linha_app"]
                 linha_app_frente = self.dict_poligono_descricao["metadados"]["linhas"][id_frente]["linha_app"]
                 poligono = func_app.criar_poligono_app(linha_app, linha_app_frente)
-
                 self.registrar_poligonos_app(poligono, id_linha, id_frente)
                 if id_linha == 0:
                     id_atras = self.dict_poligono_descricao["metadados"]["linhas"][id_linha]["id_atras"]

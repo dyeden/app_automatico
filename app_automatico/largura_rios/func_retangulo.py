@@ -51,7 +51,6 @@ def bases_larguras(polygon, proj_geo):
     point2 = None
     point3 = None
     point4 = None
-
     for part in polygon:
         point1 = part[0]
         point2 = part[1]
@@ -122,10 +121,6 @@ if __name__ == '__main__':
                           projecao_geo)
 
     cursor_insert_ret = da.InsertCursor(diretorio_saida + "\RETANGULOS_MI.shp", ['Id', 'SHAPE@'])
-
-
-
-
 
     with da.UpdateCursor(diretorio, ["OID@", "SHAPE@", "area_m2", "perim_m", "frac", "comp", "ret"]) as cursor:
         for row in cursor:
