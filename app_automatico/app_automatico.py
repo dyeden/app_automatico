@@ -113,7 +113,7 @@ class DefinirApp:
         mkdir(self.diretorio_saida + "/RESIDUOS")
         mkdir(self.diretorio_saida + "/APP")
 
-        with arcpy.da.SearchCursor(dir_ma_shp, ["OID@", "SHAPE@"], "FID = 19") as cursor:
+        with arcpy.da.SearchCursor(dir_ma_shp, ["OID@", "SHAPE@"], "FID = 215") as cursor:
             for row in cursor:
                 print "fid: ", row[0]
                 dict_app_poligonos, self.dict_poligono_descricao = self.gerar_app(row[0], row[1].projectAs(self.projecao_geo), "MASSA_DAGUA")

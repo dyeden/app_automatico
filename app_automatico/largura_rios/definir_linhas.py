@@ -76,7 +76,7 @@ class DefinirLinhas():
         func_linhas.borda_linha_geo = self.borda_linha_geo
         func_linhas.borda_linha_plana = self.borda_linha_plana
         self.dict_lista_pontos = \
-            func_linhas.pontos_aolongo_linha()
+            func_linhas.pontos_aolongo_linha(self.borda_linha_geo)
 
     def tipo_poligono(self):
         "descreve qual o tipo de poligono"
@@ -252,9 +252,14 @@ class DefinirLinhas():
         distancia = 0
         compri_total = self.dict_lista_pontos["compri_total"]
 
+        intervalo = 9
+        dict_pontos_linha = func_linhas.pontos_aolongo_linha(self.borda_linha_geo, intervalo)
+        distancia = 0
+        compri_total = dict_pontos_linha["compri_total"]
+
         lista_pontos_voronoi = []
         while distancia < compri_total:
-            ponto = self.dict_lista_pontos[distancia]
+            ponto = dict_pontos_linha[distancia]
             array.add(ponto.labelPoint)
             lista_pontos_voronoi.append([ponto.labelPoint.X, ponto.labelPoint.Y])
             distancia += intervalo
@@ -262,10 +267,48 @@ class DefinirLinhas():
         del array
 
 
-        linha_voronoi = func_voronoi.voronoi_pontos(lista_pontos_voronoi,  self.poligono_ma,
+        linha_voronoi = func_voronoi.voronoi_pontos_shapely(lista_pontos_voronoi,  self.poligono_ma,
                                                     self.poligono_ma.boundary(), self.projecao_geo, self.diretorio_saida, self.fid)
 
         linha_voronoi_limpa = func_voronoi.limpar_linha(linha_voronoi, self.projecao_geo, self.projecao_plana)
+
+        intervalo = 12
+        dict_pontos_linha = func_linhas.pontos_aolongo_linha(linha_voronoi_limpa, intervalo)
+        li_pontos_central = []
+        array = arcpy.Array()
+        distancia = 0
+        compri_total = dict_pontos_linha["compri_total"]
+        while distancia < compri_total:
+            ponto = dict_pontos_linha[distancia]
+            array.add(ponto.labelPoint)
+            li_pontos_central.append([ponto.labelPoint.X, ponto.labelPoint.Y])
+            distancia += intervalo
+        pontos_linha = arcpy.Multipoint(array, self.projecao_geo)
+
+        x_ext_max = self.poligono_ma.extent.XMax + 0.1
+        y_ext_max = self.poligono_ma.extent.YMax + 0.1
+        x_ext_min = self.poligono_ma.extent.XMin - 0.1
+        y_ext_min = self.poligono_ma.extent.YMin - 0.1
+        li_pontos_extent = []
+        li_pontos_extent.append([x_ext_max,y_ext_max])
+        li_pontos_extent.append([x_ext_min,y_ext_min])
+        for part in linha_voronoi_limpa.getPart():
+            linha_part = arcpy.Polyline(part, self.projecao_geo)
+            intervalo = 12
+            dict_pontos_linha = func_linhas.pontos_aolongo_linha(linha_part, intervalo)
+            li_pontos_part = []
+            array = arcpy.Array()
+            distancia = 0
+            compri_total = dict_pontos_linha["compri_total"]
+
+            while distancia < compri_total:
+                ponto = dict_pontos_linha[distancia]
+                array.add(ponto.labelPoint)
+                li_pontos_part.append([ponto.labelPoint.X, ponto.labelPoint.Y])
+                distancia += intervalo
+            lista_linhas_voronoi, polyline_voronoi = func_voronoi.voronoi_linhas_soltas(li_pontos_part, li_pontos_extent, linha_part)
+            pass
+
         pass
 
     def direcionar_processo(self):
