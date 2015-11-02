@@ -1,6 +1,6 @@
 from math import sqrt, acos, sin, cos, pi, atan
 class PtCircBorda(object):
-    def __init__(self, x0, y0, pt1_x = None, pt1_y = None, pt2_x = None, pt2_y = None):
+    def __init__(self, x0= None, y0= None, pt1_x = None, pt1_y = None, pt2_x = None, pt2_y = None):
         self.x0 = x0; self.y0 = y0
         self.pt1_x = pt1_x; self.pt1_y = pt1_y; self.pt2_x = pt2_x; self.pt2_y = pt2_y
 
@@ -49,7 +49,12 @@ class PtCircBorda(object):
         produto_esc = vetor_pt1_x*vetor_pt2_x + vetor_pt1_y*vetor_pt2_y
         magnitude_vetor_pt1 = sqrt(pow(vetor_pt1_x,2) + pow(vetor_pt1_y,2))
         magnitude_vetor_pt2 = sqrt(pow(vetor_pt2_x,2) + pow(vetor_pt2_y,2))
-        angulo_rad = acos(produto_esc/(magnitude_vetor_pt1*magnitude_vetor_pt2))
+        result = produto_esc/(magnitude_vetor_pt1*magnitude_vetor_pt2)
+        if result >= 1:
+            result = 1
+        elif result <= -1:
+            result = -1
+        angulo_rad = acos(result)
         return angulo_rad
 
     def retorna_ponto_atraves_angulo(self, ang_rad, raio):

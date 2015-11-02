@@ -285,10 +285,10 @@ class DefinirLinhas():
             distancia += intervalo
         pontos_linha = arcpy.Multipoint(array, self.projecao_geo)
 
-        x_ext_max = self.poligono_ma.extent.XMax + 0.1
-        y_ext_max = self.poligono_ma.extent.YMax + 0.1
-        x_ext_min = self.poligono_ma.extent.XMin - 0.1
-        y_ext_min = self.poligono_ma.extent.YMin - 0.1
+        x_ext_max = self.poligono_ma.extent.XMax + 0.03
+        y_ext_max = self.poligono_ma.extent.YMax + 0.03
+        x_ext_min = self.poligono_ma.extent.XMin - 0.03
+        y_ext_min = self.poligono_ma.extent.YMin - 0.03
         li_pontos_extent = []
         li_pontos_extent.append([x_ext_max,y_ext_max])
         li_pontos_extent.append([x_ext_min,y_ext_min])
@@ -306,7 +306,7 @@ class DefinirLinhas():
                 array.add(ponto.labelPoint)
                 li_pontos_part.append([ponto.labelPoint.X, ponto.labelPoint.Y])
                 distancia += intervalo
-            lista_linhas_voronoi, polyline_voronoi = func_voronoi.voronoi_linhas_soltas(li_pontos_part, li_pontos_extent, linha_part)
+            lista_linhas_voronoi, polyline_voronoi = func_voronoi.voronoi_linhas_soltas(li_pontos_part, li_pontos_extent, linha_part, self.projecao_geo)
             pass
 
         pass

@@ -1,6 +1,6 @@
 from math import sqrt, acos, sin, cos, pi, atan
 class CircVetores(object):
-    def __init__(self, x0, y0, pt1_x = None, pt1_y = None, pt2_x = None, pt2_y = None):
+    def __init__(self, x0 = None, y0= None, pt1_x = None, pt1_y = None, pt2_x = None, pt2_y = None):
         self.x0 = x0; self.y0 = y0
         self.pt1_x = pt1_x; self.pt1_y = pt1_y; self.pt2_x = pt2_x; self.pt2_y = pt2_y
 
