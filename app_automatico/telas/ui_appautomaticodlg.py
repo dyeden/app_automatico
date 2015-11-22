@@ -93,13 +93,13 @@ class Ui_AppAutomaticoDlg(object):
 
     def retranslateUi(self, AppAutomaticoDlg):
         AppAutomaticoDlg.setWindowTitle(_translate("AppAutomaticoDlg", "App Automatico", None))
-        self.label_3.setText(_translate("AppAutomaticoDlg", "Poligonos de Massa d Agua", None))
+        self.label_3.setText(_translate("AppAutomaticoDlg", "Polígonos de Massa d'Água", None))
         self.maButton.setText(_translate("AppAutomaticoDlg", "Adicionar", None))
         self.label.setText(_translate("AppAutomaticoDlg", "Linhas de Drenagem", None))
         self.dreButton.setText(_translate("AppAutomaticoDlg", "Adiconar", None))
         self.label_2.setText(_translate("AppAutomaticoDlg", "Pontos de Nascentes", None))
         self.ptButton.setText(_translate("AppAutomaticoDlg", "Adicionar", None))
-        self.label_4.setText(_translate("AppAutomaticoDlg", "Limite da Propriedade", None))
+        self.label_4.setText(_translate("AppAutomaticoDlg", "Polígono Limitante", None))
         self.aprtButton.setText(_translate("AppAutomaticoDlg", "Adicionar", None))
         self.saiButton.setText(_translate("AppAutomaticoDlg", "Saída", None))
         self.label_5.setText(_translate("AppAutomaticoDlg", "Local de saída de dados", None))

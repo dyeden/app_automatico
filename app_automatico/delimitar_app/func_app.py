@@ -101,3 +101,10 @@ def criar_poligono_app(linha_app, linha_app_frente):
     polygon = polygon.buffer(0.000000001)
     return polygon
 
+def criar_poligono_app_hull(linha_app, linha_app_frente):
+    linha_union = linha_app.union(linha_app_frente)
+    polygon = linha_union.convexHull()
+    polygon = polygon.buffer(0.000000001)
+    return polygon
+
+

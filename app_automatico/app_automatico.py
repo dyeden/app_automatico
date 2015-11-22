@@ -35,6 +35,7 @@ class DefinirApp:
 
     def gerar_app(self, fid, poligono_ma, tipo):
         "gerar app de acordo com o tipo de dado"
+
         if tipo == "MASSA_DAGUA":
             tipo_ma = None
             obj_tipo_poligono = TipoPoligono()
@@ -63,6 +64,7 @@ class DefinirApp:
 
     def salvar_dados(self, dict_app_poligonos, fid):
         diretorio_app = self.diretorio_saida + "\APP\APP_" + str(fid)
+        diretorio_app_dissolvido = self.diretorio_saida + "\APP\APP_DISS_" + str(fid) + ".shp"
         diretorio_linhas = self.diretorio_saida + "/LINHAS/LINHAS_LARGURA_FID_" + str(fid) + ".shp"
         diretorio_li_app = self.diretorio_saida + "/LINHAS/LINHAS_APP_FID_" + str(fid) + ".shp"
 
@@ -70,10 +72,18 @@ class DefinirApp:
                               self.projecao_geo)
         cursor_insert = arcpy.da.InsertCursor(diretorio_app + ".shp", ['Id', 'SHAPE@'])
 
+
+        id_app_final = 0
         for id_app in dict_app_poligonos:
             cursor_insert.insertRow((id_app, dict_app_poligonos[id_app]["poligono"]))
             # arcpy.CopyFeatures_management(dict_app_poligonos[id]["poligono"],self.diretorio_saida + "\APP\APP_" + str(fid) + "_" + str(id))
+            id_app_final = id_app
+        id_app_final += 1
+        buffer30m_poly =  self.poligono_ma.projectAs(self.projecao_plana).buffer(30)
+        cursor_insert.insertRow((id_app_final, buffer30m_poly))
         del cursor_insert
+
+        arcpy.Dissolve_management(diretorio_app + ".shp", diretorio_app_dissolvido)
 
         arcpy.CreateFeatureclass_management(self.diretorio_saida + "/LINHAS", "LINHAS_LARGURA_FID_" + str(fid) + ".shp", "POLYLINE", "", "", "",
                               self.projecao_geo)
@@ -101,11 +111,12 @@ class DefinirApp:
         del cursor_insert_app
 
 
+
     def main(self):
         if self.__maPath:
             dir_ma_shp = self.__maPath
         else:
-            dir_ma_shp = self.diretorio_entrada + "\MASSA_DAGUA_2.shp"
+            dir_ma_shp = self.diretorio_entrada + "\MASSA_DAGUA_1507953.shp"
         if path.exists(self.diretorio_saida):
             rmtree(self.diretorio_saida)
         mkdir(self.diretorio_saida)
@@ -113,11 +124,13 @@ class DefinirApp:
         mkdir(self.diretorio_saida + "/RESIDUOS")
         mkdir(self.diretorio_saida + "/APP")
 
-        with arcpy.da.SearchCursor(dir_ma_shp, ["OID@", "SHAPE@"], "FID = 215") as cursor:
+        with arcpy.da.SearchCursor(dir_ma_shp, ["OID@", "SHAPE@"], "FID IN (130)") as cursor:
             for row in cursor:
                 print "fid: ", row[0]
+                self.poligono_ma = row[1].projectAs(self.projecao_geo)
                 dict_app_poligonos, self.dict_poligono_descricao = self.gerar_app(row[0], row[1].projectAs(self.projecao_geo), "MASSA_DAGUA")
                 self.salvar_dados(dict_app_poligonos, row[0])
+
         del cursor
 
 if __name__ == '__main__':

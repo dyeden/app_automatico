@@ -39,7 +39,7 @@ setup(
     options={"py2exe":{
                 # 'packages':['app_automatico'],
 
-                'bundle_files': 1,
+                'bundle_files': 2,
                 'compressed': True,
                 "includes":["sip","PyQt4.QtGui", "app_automatico"],
                 "dll_excludes": ["MSVCP90.dll", "HID.DLL", "w9xpopen.exe"]

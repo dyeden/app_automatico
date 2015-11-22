@@ -23,13 +23,18 @@ class AppRio():
         compri_app = None
         if compri_linha < 10:
             compri_app = 30
-        elif compri_app <= 10 and compri_app < 50:
+        elif compri_linha >= 10 and compri_linha < 50:
             compri_app = 50
-        elif compri_app <= 50 and compri_app < 200:
+        elif compri_linha >= 50 and compri_linha < 200:
             compri_app = 100
+        elif compri_linha >= 200 and compri_linha < 600:
+            compri_app = 200
+        else:
+            compri_app = 600
         return compri_app
 
     def analisar_linhas(self):
+
         for id_linha in self.dict_poligono_descricao["metadados"]["linhas"]:
             "para cada linha de largura do rio e criada uma linha de app"
             linha = self.dict_poligono_descricao["metadados"]["linhas"][id_linha]["linha_largura"]
@@ -67,11 +72,25 @@ class AppRio():
                         poligono = func_app.criar_poligono_app(linha_app, linha_app_atras)
                         self.registrar_poligonos_app(poligono, id_linha, id_atras)
 
+    def analisar_linhas_voronoi(self):
+        for id_linha in self.dict_poligono_descricao["metadados"]["linhas"]:
+            id_frente = self.dict_poligono_descricao["metadados"]["linhas"][id_linha]["id_frente"]
+            if id_frente is not None:
+                linha1 = self.dict_poligono_descricao["metadados"]["linhas"][id_linha]["linha_largura"]
+                linha2 = self.dict_poligono_descricao["metadados"]["linhas"][id_frente]["linha_largura"]
+                linha_app1 = func_app.criar_linha_largura_app(linha1, self.largura_app(linha1))
+                linha_app2 = func_app.criar_linha_largura_app(linha2, self.largura_app(linha2))
+                poligono = func_app.criar_poligono_app_hull(linha_app2, linha_app1)
+                self.registrar_poligonos_app(poligono, id_frente, id_linha)
+
     def registrar_variaveis_func_app(self):
         func_app.projecao_plana = self.projecao_plana
         func_app.projecao_geo = self.projecao_geo
 
     def iniciar_codigo(self):
         self.registrar_variaveis_func_app()
-        self.analisar_linhas()
+        if  self.dict_poligono_descricao["metodo"] == "voronoi":
+            self.analisar_linhas_voronoi()
+        else:
+            self.analisar_linhas()
         return self.dict_app_poligonos, self.dict_poligono_descricao

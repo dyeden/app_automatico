@@ -11,6 +11,7 @@ class DefinirLinhas():
         self.dict_poligono_descricao =   {
             "tipo": None,
             "subtipo":None,
+            "metodo":None,
             "metadados":{"linhas":{
                 0:{
                     "id_linha_braco":None,
@@ -211,6 +212,7 @@ class DefinirLinhas():
 
             elif id_linha > 0:
                 linha_ret = func_retangulo.calc_linha_ret(lin_base_plana_1, lin_base_plana_2, distancia, self.projecao_geo, self.projecao_geo)
+                print linha_ret.WKT
                 if not linha_ret.disjoint(self.poligono_ma):
                     linha_largura = linha_ret.intersect(self.poligono_ma, 2)
                     self.dict_poligono_descricao["metadados"]["linhas"][id_linha]["linha_largura"] = linha_largura
@@ -247,12 +249,9 @@ class DefinirLinhas():
     def montar_linhas_voronoi(self):
         #recolocar os pontos por intervalo
         import func_voronoi
+        self.dict_poligono_descricao["metodo"] = "voronoi"
         array = arcpy.Array()
-        intervalo = 10
-        distancia = 0
-        compri_total = self.dict_lista_pontos["compri_total"]
-
-        intervalo = 9
+        intervalo = 30
         dict_pontos_linha = func_linhas.pontos_aolongo_linha(self.borda_linha_geo, intervalo)
         distancia = 0
         compri_total = dict_pontos_linha["compri_total"]
@@ -265,50 +264,107 @@ class DefinirLinhas():
             distancia += intervalo
         multiPoint = arcpy.Multipoint(array)
         del array
+        print "pontos na borda finalizado"
 
-
+        #calcular linha central
         linha_voronoi = func_voronoi.voronoi_pontos_shapely(lista_pontos_voronoi,  self.poligono_ma,
                                                     self.poligono_ma.boundary(), self.projecao_geo, self.diretorio_saida, self.fid)
+        print "linha central passo 1 finalizado"
 
-        linha_voronoi_limpa = func_voronoi.limpar_linha(linha_voronoi, self.projecao_geo, self.projecao_plana)
+        #limpar falhas
+        linha_central = func_voronoi.limpar_linha(linha_voronoi, self.projecao_geo, self.projecao_plana)
+        print "limpar falhas 1 finalizado"
 
-        intervalo = 12
-        dict_pontos_linha = func_linhas.pontos_aolongo_linha(linha_voronoi_limpa, intervalo)
-        li_pontos_central = []
-        array = arcpy.Array()
-        distancia = 0
-        compri_total = dict_pontos_linha["compri_total"]
-        while distancia < compri_total:
-            ponto = dict_pontos_linha[distancia]
-            array.add(ponto.labelPoint)
-            li_pontos_central.append([ponto.labelPoint.X, ponto.labelPoint.Y])
-            distancia += intervalo
-        pontos_linha = arcpy.Multipoint(array, self.projecao_geo)
+        listPtTodos, listPtInter, listPtFim = func_voronoi.PontosInterFim(linha_central)
+        print "pontos fim e inter 1 finalizado"
+
+        linha_central = func_voronoi.limpar_linha_CircBorda(listPtFim, linha_central, self.poligono_ma,
+                                                            self.borda_linha_geo, self.projecao_plana)
+        del listPtTodos, listPtInter, listPtFim
+        print "linha central 2 finalizado"
+
+        listPtTodos, listPtInter, listPtFim = func_voronoi.PontosInterFim(linha_central)
+        print "pontos fim e inter 2 finalizado"
+
+        poligonos_separados = func_voronoi.cortar_conexoes(
+            self.poligono_ma, linha_central, listPtInter, raio = 0.005
+        )
+        listaLinhaPoligono = func_voronoi.indetiLinePoly(poligonos_separados, linha_central)
+        print "cortar conexoes finalizado"
 
         x_ext_max = self.poligono_ma.extent.XMax + 0.03
         y_ext_max = self.poligono_ma.extent.YMax + 0.03
         x_ext_min = self.poligono_ma.extent.XMin - 0.03
         y_ext_min = self.poligono_ma.extent.YMin - 0.03
-        li_pontos_extent = []
-        li_pontos_extent.append([x_ext_max,y_ext_max])
-        li_pontos_extent.append([x_ext_min,y_ext_min])
-        for part in linha_voronoi_limpa.getPart():
-            linha_part = arcpy.Polyline(part, self.projecao_geo)
+        li_pontos_extent = [
+        [x_ext_max,y_ext_max],
+        [x_ext_min,y_ext_min]
+                ]
+
+        id_linha_braco = 0
+        id_linha = 0
+        for linhaPart, poligonoPart in listaLinhaPoligono:
+            linhaarcpy = arcpy.FromWKT(linhaPart.wkt, arcpy.SpatialReference(4674))
             intervalo = 12
-            dict_pontos_linha = func_linhas.pontos_aolongo_linha(linha_part, intervalo)
+            dict_pontos_linha = func_linhas.pontos_aolongo_linha(linhaarcpy, intervalo)
+            compri_total = dict_pontos_linha["compri_total"]
+
             li_pontos_part = []
             array = arcpy.Array()
             distancia = 0
-            compri_total = dict_pontos_linha["compri_total"]
-
             while distancia < compri_total:
                 ponto = dict_pontos_linha[distancia]
                 array.add(ponto.labelPoint)
                 li_pontos_part.append([ponto.labelPoint.X, ponto.labelPoint.Y])
                 distancia += intervalo
-            lista_linhas_voronoi, polyline_voronoi = func_voronoi.voronoi_linhas_soltas(li_pontos_part, li_pontos_extent, linha_part, self.projecao_geo)
-            pass
+            try:
+                lista_linhas_final, polyline_final = func_voronoi.gerar_linhas_largura(poligonoPart,
+                    li_pontos_part, li_pontos_extent, linhaPart, self.projecao_geo)
+            except:
+                print "ERRO: linhas largura nao funcionaram, " + linhaPart.wkt
+                continue
 
+
+            count_li = 0
+            total = len(lista_linhas_final)
+            for linha_largura in lista_linhas_final:
+                if count_li == 0:
+                     self.dict_poligono_descricao["metadados"]["linhas"][id_linha] = {
+                        "id_linha_braco":id_linha_braco,
+                        "id_frente":id_linha + 1,
+                        "id_atras":None,
+                        "linha_largura":linha_largura,
+                        "linha_app":None,
+                        "braco":None,
+                        "distancia":None,
+                        "tipo":"meio",
+                    }
+                elif count_li == (total-1):
+                     self.dict_poligono_descricao["metadados"]["linhas"][id_linha] = {
+                        "id_linha_braco":id_linha_braco,
+                        "id_frente":None,
+                        "id_atras":id_linha - 1,
+                        "linha_largura":linha_largura,
+                        "linha_app":None,
+                        "braco":None,
+                        "distancia":None,
+                        "tipo":"meio",
+                    }
+                else:
+                     self.dict_poligono_descricao["metadados"]["linhas"][id_linha] = {
+                        "id_linha_braco":id_linha_braco,
+                        "id_frente":id_linha + 1,
+                        "id_atras":id_linha - 1,
+                        "linha_largura":linha_largura,
+                        "linha_app":None,
+                        "braco":None,
+                        "distancia":None,
+                        "tipo":"meio",
+                    }
+                id_linha += 1
+                count_li += 1
+            id_linha_braco += 1
+        print "linhas de largura finalizado"
         pass
 
     def direcionar_processo(self):
@@ -338,14 +394,12 @@ class DefinirLinhas():
                 if li_ret_largura[0].length/li_ret_base[0].length > 0.3:
                     tipo = "retangulo"
                 else:
-                    tipo = "circulo"
+                    tipo = "curvo"
                 return tipo, li_ret_base, li_ret_largura
             else:
                 return "curvo", li_ret_base, li_ret_largura
-        elif frac_p < 1.21:
-            return "curvo", li_ret_base, li_ret_largura
         else:
-            return "circulo", li_ret_base, li_ret_largura
+            return "curvo", li_ret_base, li_ret_largura
 
 
     def registrar_variaveis_func_linhas(self):
@@ -361,7 +415,7 @@ class DefinirLinhas():
         self.tipo_poligono()
         if self.dict_poligono_descricao["tipo"] == "rio":
             tipo, li_ret_base, li_ret_largura = self.direcionar_processo()
-            tipo = "curvo"
+
             if tipo == "circulo":
                 self.dissecar_poligono()
                 self.montar_linhas()
@@ -370,5 +424,4 @@ class DefinirLinhas():
             elif tipo == "curvo":
                 self.dissecar_poligono()
                 self.montar_linhas_voronoi()
-
         return self.dict_poligono_descricao
